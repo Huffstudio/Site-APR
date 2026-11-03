@@ -559,7 +559,7 @@ function init3D(){
   host.hidden = false;
   renderer.setPixelRatio(Math.min(devicePixelRatio,2));
   renderer.outputEncoding = THREE.sRGBEncoding;
-  renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = .95;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = .9;
   host.appendChild(renderer.domElement);
 
   const scene = new THREE.Scene();
@@ -593,13 +593,13 @@ function init3D(){
   const brown  = new THREE.MeshStandardMaterial({color:0x3a1c1d, roughness:.75, metalness:.15});
   const brown2 = new THREE.MeshStandardMaterial({color:0x2c1517, roughness:.7, metalness:.2});
   const dark   = new THREE.MeshStandardMaterial({color:0x24282d, roughness:.55, metalness:.45});
-  const slab   = new THREE.MeshStandardMaterial({color:0x8a8f96, roughness:.5, metalness:.3});
+  const slab   = new THREE.MeshStandardMaterial({color:0x34282a, roughness:.55, metalness:.3});
   const led    = new THREE.MeshBasicMaterial({color:0xf3c37e});
   const railMat= new THREE.MeshStandardMaterial({color:0xcfe4ff, roughness:.05, metalness:.2, transparent:true, opacity:.2, side:THREE.DoubleSide, depthWrite:false});
   const green  = new THREE.MeshStandardMaterial({color:0x2f5b39, roughness:.8});
   const trunk  = new THREE.MeshStandardMaterial({color:0x6b5440, roughness:.9});
-  const litMats = [.2,.28,.36,.46].map(i => new THREE.MeshStandardMaterial({color:0x1a1f2c, roughness:.08, metalness:.7, emissive:0xffc77e, emissiveIntensity:i}));
-  const offMat = new THREE.MeshStandardMaterial({color:0x1c2538, roughness:.05, metalness:.9, envMapIntensity:1.2, emissive:0x0a0d14, emissiveIntensity:.2});
+  const litMats = [.07,.1,.14,.2].map(i => new THREE.MeshStandardMaterial({color:0x1a2232, roughness:.08, metalness:.75, emissive:0xffc27a, emissiveIntensity:i}));
+  const offMat = new THREE.MeshStandardMaterial({color:0x2a3a58, roughness:.05, metalness:.85, envMapIntensity:1.1, emissive:0x0c1220, emissiveIntensity:.25});
   const hoverMat = new THREE.MeshStandardMaterial({color:0x1b2430, roughness:.08, metalness:.5, emissive:0x9cd3ff, emissiveIntensity:.9});
   const add = (mesh,parent,x,y,z,ry=0) => { mesh.position.set(x,y,z); mesh.rotation.y = ry; (parent||tower).add(mesh); return mesh; };
   const box = (w,h,d,mat,x,y,z,parent) => add(new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat), parent, x,y,z);
@@ -628,10 +628,10 @@ function init3D(){
         for (let f=0; f<NF; f++){
           const y = PH + f*FH + FH/2;
           if (c.t==="big" || c.t==="small"){
-            const m = new THREE.Mesh(new THREE.PlaneGeometry(cw-(c.t==="big"?.22:.34), FH-(c.t==="big"?.5:.58)), pick(.7));
+            const m = new THREE.Mesh(new THREE.PlaneGeometry(cw-(c.t==="big"?.22:.34), FH-(c.t==="big"?.5:.58)), pick(.38));
             add(m, g, ...fc.p(tc,y,.02), fc.ry); tag(m, torre, fc, tc); panels.push(m);
           } else if (c.t==="dots"){
-            [-.22,.22].forEach(o => add(new THREE.Mesh(new THREE.PlaneGeometry(.2,.24), pick(.7)), g, ...fc.p(tc+o*cw,y,.02), fc.ry));
+            [-.22,.22].forEach(o => add(new THREE.Mesh(new THREE.PlaneGeometry(.2,.24), pick(.4)), g, ...fc.p(tc+o*cw,y,.02), fc.ry));
           } else if (c.t==="balc"){
             const m = new THREE.Mesh(new THREE.PlaneGeometry(cw-.2, FH-.22), pick(.35));
             add(m, g, ...fc.p(tc,y,.02), fc.ry); tag(m, torre, fc, tc); panels.push(m);
@@ -652,7 +652,7 @@ function init3D(){
 
   // embasamento: garagens com brises verticais, térreo iluminado e pórtico de LED na entrada
   solids.push(box(30, PH, 18, dark, 0, PH/2, 0));
-  box(30.06, 2.2, 18.06, new THREE.MeshStandardMaterial({color:0x2a2420, roughness:.2, metalness:.4, emissive:0xffcf9a, emissiveIntensity:.22}), 0, 1.1, 0);
+  box(30.06, 2.2, 18.06, new THREE.MeshStandardMaterial({color:0x2a2420, roughness:.2, metalness:.4, emissive:0xffcf9a, emissiveIntensity:.16}), 0, 1.1, 0);
   for (let x=-14.4; x<=14.4; x+=.62){ if (Math.abs(x) < 5.2) continue; box(.1, PH-2.6, .16, slab, x, 2.2+(PH-2.6)/2, 9.05); }
   [[9.4,6.4],[6.2,4.9],[3.2,3.2]].forEach(([w,h],i) => {
     const z = 9.25 + i*.02;

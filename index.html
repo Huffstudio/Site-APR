@@ -59,7 +59,8 @@ h2 em,h1 em{font-style:italic;color:var(--amber)}
 .hero-copy{position:absolute;left:0;right:0;top:14%;pointer-events:none}
 .hero-copy .wrap{display:flex}
 .hero-copy .col{max-width:min(40vw,500px)}
-.hero-copy .eyebrow{color:#D9C7A6}
+.hero-name{font-family:var(--display);font-size:clamp(20px,2vw,26px);color:#F2DDB6;letter-spacing:.02em;line-height:1.2}
+.hero-loc{font-size:13px;color:#AEB8C4;margin:4px 0 18px}
 .hero-copy h1{font-size:clamp(40px,5.4vw,82px);line-height:.95;color:#F7F2EA;text-shadow:0 2px 24px rgba(5,10,16,.6)}
 .hero-copy h1 em{color:#F7F2EA;font-style:italic;font-weight:400}
 .hero-copy .lede{max-width:34ch;color:#C8D0D9;margin-top:20px;font-size:16px}
@@ -211,7 +212,8 @@ footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
     <div class="hero-copy" id="heroCopy">
       <div class="wrap">
         <div class="col">
-          <div class="eyebrow">Lançamento · Sorriso, MT</div>
+          <div class="hero-name">Edifício Vértice</div>
+          <div class="hero-loc">Lançamento em Sorriso, MT</div>
           <h1>Viver no <em>alto</em> do Teles Pires</h1>
           <p class="lede">Torre única com 18 pavimentos, 68 residências e coberturas com piscina privativa, de frente para o rio.</p>
           <div class="hero-facts">
@@ -379,7 +381,6 @@ if (window.gsap && window.ScrollTrigger){
   if (!reduce){
     const st = {trigger:intro,start:"top top",end:"bottom top",scrub:true};
     gsap.to(wrap,{scale:1.18,yPercent:10,ease:"none",scrollTrigger:st});
-    gsap.to(copy,{y:-160,autoAlpha:0,ease:"none",scrollTrigger:{...st,end:"55% top"}});
     gsap.to(hint,{autoAlpha:0,ease:"none",scrollTrigger:{...st,end:"+=80"}});
   }
 } else if (lenis){ const raf = t => { lenis.raf(t); requestAnimationFrame(raf); }; requestAnimationFrame(raf); }

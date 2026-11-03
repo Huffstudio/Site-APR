@@ -4,16 +4,16 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@300;400;500&family=Marcellus&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
 <style>
 /* Layout: torre 3D girável como protagonista sobre um céu de grafite azulado; depois o prédio vira um seletor de unidades.
-   Identidade Gran Reserva: céu de pôr do sol na abertura, páginas em bege rosado, vinho do selo e dourado das molduras de LED. */
+   Identidade Gran Reserva em versão noturna: céu de pôr do sol que escurece até o tom ameixa-café das páginas, com o dourado das molduras de LED como destaque e o vinho do selo. */
 :root{
-  --night:#F2EAE3; --deep:#EADFD5; --panel:#FBF7F3; --line:rgba(70,40,32,.14);
-  --fg:#2B1E1A; --muted:#7B6A62; --amber:#8E2F2B; --amber-soft:rgba(142,47,43,.07);
+  --night:#181214; --deep:#1F181A; --panel:#271F21; --line:rgba(240,214,190,.12);
+  --fg:#F2E7DD; --muted:#B3A197; --amber:#D6A764; --amber-soft:rgba(214,167,100,.10);
   --gold:#D6A764;
   --ok:#5FD6A8; --hold:#F2B35E; --sold:#46505E;
   --display:"Marcellus", Georgia, serif;
   --body:"Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
   --mono:"JetBrains Mono", ui-monospace, Menlo, monospace;
-  color-scheme:light;
+  color-scheme:dark;
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
@@ -45,7 +45,7 @@ h2 em,h1 em{font-style:normal;color:inherit}
 
 /* intro scroll */
 .intro{position:relative}
-.stage{position:relative;height:100vh;height:100svh;overflow:hidden;background:radial-gradient(60% 40% at 72% 70%,rgba(255,196,140,.55),transparent 70%),linear-gradient(180deg,#232338 0%,#3D3655 26%,#7A5C76 48%,#C98B7B 64%,#EDC3A0 78%,var(--night) 100%)}
+.stage{position:relative;height:100vh;height:100svh;overflow:hidden;background:radial-gradient(60% 40% at 72% 70%,rgba(255,190,135,.38),transparent 70%),linear-gradient(180deg,#232338 0%,#3D3655 26%,#7A5C76 48%,#C98B7B 60%,#8A5A5C 74%,#3A2629 88%,var(--night) 100%)}
 .stage::before{content:"";position:absolute;inset:auto 0 0 0;height:55%;pointer-events:none;
   background:none;
   -webkit-mask-image:radial-gradient(70% 90% at 65% 100%,#000,transparent 75%);mask-image:radial-gradient(70% 90% at 65% 100%,#000,transparent 75%)}
@@ -486,7 +486,7 @@ function init3D(){
   host.appendChild(renderer.domElement);
 
   const scene = new THREE.Scene();
-  scene.fog = new THREE.Fog(0xd9a98f, 120, 260);
+  scene.fog = new THREE.Fog(0x3a2629, 120, 260);
   renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   // céu de fim de tarde só para reflexo nos vidros (não aparece no fundo)
   {
@@ -599,11 +599,11 @@ function init3D(){
   // chão difuso: brilho radial que se dissolve no fundo
   const cv2 = document.createElement("canvas"); cv2.width = cv2.height = 256;
   const g2 = cv2.getContext("2d"), grd = g2.createRadialGradient(128,128,0,128,128,128);
-  grd.addColorStop(0,"rgba(255,200,140,.35)"); grd.addColorStop(.35,"rgba(200,130,100,.12)"); grd.addColorStop(1,"rgba(242,234,227,0)");
+  grd.addColorStop(0,"rgba(255,200,140,.35)"); grd.addColorStop(.35,"rgba(200,130,100,.12)"); grd.addColorStop(1,"rgba(24,18,20,0)");
   g2.fillStyle = grd; g2.fillRect(0,0,256,256);
   const ground = new THREE.Mesh(new THREE.PlaneGeometry(70,70), new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(cv2), transparent:true, depthWrite:false}));
   ground.rotation.x = -Math.PI/2; ground.position.y = .01; scene.add(ground);
-  const shadowCatch = new THREE.Mesh(new THREE.PlaneGeometry(70,70), new THREE.ShadowMaterial({opacity:.3}));
+  const shadowCatch = new THREE.Mesh(new THREE.PlaneGeometry(70,70), new THREE.ShadowMaterial({opacity:.45}));
   shadowCatch.rotation.x = -Math.PI/2; shadowCatch.position.y = .02; shadowCatch.receiveShadow = true; scene.add(shadowCatch);
   tower.traverse(o => { if (o.isMesh && o.material !== railMat){ o.castShadow = true; o.receiveShadow = true; } });
 

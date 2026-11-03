@@ -222,17 +222,19 @@ footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
 .pstage.is3d .pmodel::before{opacity:1}
 .pmodes{position:absolute;top:12px;right:12px;display:flex;border:1px solid rgba(20,24,30,.15);border-radius:999px;overflow:hidden;background:#fff;z-index:2}
 .pmodes button{border:0;background:none;padding:6px 14px;font-size:12px;font-weight:700;color:#4b5563}
-.pmodes button[aria-pressed="true"]{background:var(--night);color:#fff}
+.pmodes button[aria-pressed="true"]{background:#1d2733;color:#fff}
 .phint{position:absolute;left:12px;bottom:12px;font-size:11px;color:#4b5563;background:rgba(255,255,255,.8);padding:3px 10px;border-radius:999px;pointer-events:none}
 .pstage:not(.is3d) .phint{display:none}
 .rooms{position:absolute;inset:0}
 .pstage.is3d .rooms{display:none}
-.room-hs{position:absolute;border-radius:4px;cursor:zoom-in;border:1.5px solid transparent;transition:background .35s ease,border-color .35s ease}
-.room-hs span{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) scale(.92);background:rgba(11,16,22,.86);color:#fff;font-size:12px;font-weight:600;padding:5px 11px;border-radius:999px;white-space:nowrap;opacity:0;transition:opacity .35s ease,transform .35s ease;pointer-events:none}
-.room-hs:hover,.room-hs:focus-visible,.room-hs.on{background:rgba(124,180,255,.16);border-color:rgba(60,120,210,.55)}
-.room-hs:hover span,.room-hs:focus-visible span,.room-hs.on span{opacity:1;transform:translate(-50%,-50%) scale(1)}
+.room-hs{position:absolute;border:0;padding:0;background:transparent;cursor:zoom-in;border-radius:3px;transition:background .5s ease}
+.room-hs span{position:absolute;left:50%;top:50%;transform:translate(-50%,-40%);font-family:var(--display);font-weight:400;font-size:13px;letter-spacing:.03em;color:#1d2733;white-space:nowrap;opacity:0;pointer-events:none;
+  text-shadow:0 0 2px #fff,0 0 8px rgba(255,255,255,.95),0 0 16px rgba(255,255,255,.8);transition:opacity .5s ease,transform .5s ease}
+.room-hs:hover,.room-hs:focus-visible,.room-hs.on{background:rgba(255,255,255,.12)}
+.room-hs:hover span,.room-hs:focus-visible span,.room-hs.on span{opacity:1;transform:translate(-50%,-50%)}
+.room-hs:focus-visible{outline:1px solid rgba(29,39,51,.35);outline-offset:-1px}
 .pstage.zoomed .room-hs{cursor:pointer}
-.pback{position:absolute;left:12px;top:12px;z-index:2;border:0;background:var(--night);color:#fff;font-size:12px;font-weight:700;padding:7px 14px;border-radius:999px}
+.pback{position:absolute;left:12px;top:12px;z-index:2;border:1px solid rgba(20,24,30,.15);background:rgba(255,255,255,.92);color:#1d2733;font-size:12px;font-weight:600;padding:6px 14px;border-radius:999px}
 @media (hover:none){.room-hs span{font-size:11px}}
 .plan-img figcaption{background:var(--panel);color:var(--muted);font-size:12px;padding:10px 14px}
 .plan-side{display:grid;gap:18px;position:sticky;top:76px;min-width:0}
@@ -716,7 +718,7 @@ function renderPlans(){
   document.querySelectorAll(".type").forEach(b => b.onclick = () => { selTipo = b.dataset.tipo; renderPlans(); });
   const u = UNIT_TYPES[selTipo];
   const src = selTipo==="U" ? IMGS.U : IMGS[selTorre][selTipo];
-  if (planImg.getAttribute("src") !== src){ planImg.style.opacity = 0; planImg.onload = () => planImg.style.opacity = 1; planImg.src = src; pRooms(selTipo==="U" ? "U" : selTorre+selTipo); }
+  if (planImg.getAttribute("src") !== src){ planImg.src = src; pRooms(selTipo==="U" ? "U" : selTorre+selTipo); }
   planImg.alt = `Planta humanizada ${u.nome}, Torre ${selTorre}`;
   planCap.textContent = selTipo==="U" ? `${u.nome} · ${u.area} · ${u.suites} suítes · planta oficial da Torre B` : `Torre ${selTorre} · ${u.nome} · ${u.area} · planta oficial`;
   document.getElementById("specs2").innerHTML = `<div><dt>Área privativa</dt><dd>${u.area}</dd></div><div><dt>Suítes</dt><dd>${u.suites}</dd></div><div><dt>Por andar</dt><dd>${selTipo==="U"?"Andar inteiro":"2 aptos"}</dd></div>`;

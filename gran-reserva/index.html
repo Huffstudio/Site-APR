@@ -1,7 +1,7 @@
 <title>Gran Reserva Residence</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@300;400;500&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@300;400;500&family=Marcellus&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
 <style>
 /* Layout: torre 3D girável como protagonista sobre um céu de grafite azulado; depois o prédio vira um seletor de unidades.
    Paleta "vidro e grafite": fundo grafite frio, texto gelo, destaque azul-glaciar com brilho ciano nos vidros. */
@@ -228,10 +228,13 @@ footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
 .rooms{position:absolute;inset:0}
 .pstage.is3d .rooms{display:none}
 .room-hs{position:absolute;border:0;padding:0;background:transparent;cursor:zoom-in;border-radius:3px;transition:background .5s ease}
-.room-hs span{position:absolute;left:50%;top:50%;transform:translate(-50%,-40%);font-family:var(--display);font-weight:400;font-size:13px;letter-spacing:.03em;color:#1d2733;white-space:nowrap;opacity:0;pointer-events:none;
+.room-hs span{position:absolute;left:50%;top:50%;transform:translate(-50%,-40%);font-family:"Marcellus", Georgia, serif;font-weight:400;font-size:15px;letter-spacing:.04em;color:#2a241f;white-space:nowrap;opacity:0;pointer-events:none;
   text-shadow:0 0 2px #fff,0 0 8px rgba(255,255,255,.95),0 0 16px rgba(255,255,255,.8);transition:opacity .5s ease,transform .5s ease}
-.room-hs:hover,.room-hs:focus-visible,.room-hs.on{background:rgba(255,255,255,.12)}
-.room-hs:hover span,.room-hs:focus-visible span,.room-hs.on span{opacity:1;transform:translate(-50%,-50%)}
+.room-hs:hover,.room-hs:focus-visible{background:rgba(255,255,255,.12)}
+.room-hs:hover span,.room-hs:focus-visible span{opacity:1;transform:translate(-50%,-50%)}
+/* cômodo em foco: o nome sai da frente para ver o ambiente */
+.room-hs.on,.room-hs.on:hover{background:transparent;cursor:default}
+.room-hs.on span,.room-hs.on:hover span{opacity:0}
 .room-hs:focus-visible{outline:1px solid rgba(29,39,51,.35);outline-offset:-1px}
 .pstage.zoomed .room-hs{cursor:pointer}
 .pback{position:absolute;left:12px;top:12px;z-index:2;border:1px solid rgba(20,24,30,.15);background:rgba(255,255,255,.92);color:#1d2733;font-size:12px;font-weight:600;padding:6px 14px;border-radius:999px}

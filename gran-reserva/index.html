@@ -233,7 +233,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
 .room-hs:hover,.room-hs:focus-visible{background:rgba(255,255,255,.12)}
 .room-hs:hover span,.room-hs:focus-visible span{opacity:1;transform:translate(-50%,-50%)}
 /* cômodo em foco: o nome sai da frente para ver o ambiente */
-.room-hs.on,.room-hs.on:hover{background:transparent;cursor:default}
+.room-hs.on,.room-hs.on:hover{background:transparent;cursor:zoom-out}
 .room-hs.on span,.room-hs.on:hover span{opacity:0}
 .room-hs:focus-visible{outline:1px solid rgba(29,39,51,.35);outline-offset:-1px}
 .pstage.zoomed .room-hs{cursor:pointer}
@@ -316,7 +316,6 @@ footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
       <figure class="plan-img">
         <div class="pstage" id="pstage">
           <div class="pmodel" id="pmodel"><img id="planImg" alt="" decoding="async"><div class="rooms" id="rooms"></div></div>
-          <button class="pback" id="pback" hidden>Ver planta inteira</button>
           <div class="pmodes"><button data-m="2d">2D</button><button data-m="3d">3D</button></div>
           <span class="phint">Arraste para girar</span>
         </div>
@@ -748,18 +747,18 @@ const ROOMS = {
   B01:[["Cozinha gourmet",2,70,30,98],["Jantar",30,70,60,98],["Living",30,40,61,70],["Suíte master",61,40,94,70],["Banho suíte master",70,27,94,40],["Suíte",40,7,61,30],["Suíte",61,7,80,28],["Banho",80,7,94,28],["Banho",40,30,50,40],["Lavabo e adega",30,25,40,40],["Área de serviço",15,7,30,25]],
   U:[["Living",2,38,18,66],["Jantar",18,38,38,66],["Cozinha gourmet",18,5,38,38],["Suíte",2,5,18,36],["Bar e jantar",18,66,55,96],["Lounge",55,66,90,96],["Home office",54,48,70,66],["Suíte",58,5,74,40],["Suíte",74,5,86,25],["Suíte master",84,10,96,42],["Suíte",72,45,86,66]]
 };
-const roomsEl = document.getElementById("rooms"), pback = document.getElementById("pback");
+const roomsEl = document.getElementById("rooms");
 let zoomRoom = null;
 function pRooms(key){
   zoomRoom = null; pZoom(null);
   roomsEl.innerHTML = (ROOMS[key]||[]).map(([n,x0,y0,x1,y1],i) =>
     `<button class="room-hs" data-i="${i}" style="left:${x0}%;top:${y0}%;width:${x1-x0}%;height:${y1-y0}%" aria-label="${n}"><span>${n}</span></button>`).join("");
-  roomsEl.querySelectorAll(".room-hs").forEach(b => b.onclick = e => { e.stopPropagation(); pZoom(b); });
+  roomsEl.querySelectorAll(".room-hs").forEach(b => b.onclick = e => { e.stopPropagation(); pZoom(zoomRoom===b ? null : b); });
 }
 // clicar num cômodo: ele vem para o centro do quadro, ampliado
 function pZoom(btn){
   roomsEl.querySelectorAll(".room-hs").forEach(b => b.classList.toggle("on", b===btn));
-  zoomRoom = btn; pstage.classList.toggle("zoomed", !!btn); pback.hidden = !btn;
+  zoomRoom = btn; pstage.classList.toggle("zoomed", !!btn);
   if (!btn){ if (pmode==="2d") pmodel.style.transform = "none"; return; }
   const W = pmodel.offsetWidth, H = pmodel.offsetHeight;
   const rx = (btn.offsetLeft + btn.offsetWidth/2), ry = (btn.offsetTop + btn.offsetHeight/2);
@@ -768,7 +767,7 @@ function pZoom(btn){
   pmodel.style.transformOrigin = `${rx}px ${ry}px`;
   pmodel.style.transform = `translate(${dx}px,${dy}px) scale(${sc})`;
 }
-pback.onclick = () => pZoom(null);
+
 let pdrag = null;
 pstage.addEventListener("pointerdown", e => { if (pmode!=="3d" || e.target.closest(".pmodes")) return; pdrag = {x:e.clientX, y:e.clientY, rx:prot.x, rz:prot.z}; pstage.setPointerCapture(e.pointerId); pstage.classList.add("dragging"); });
 pstage.addEventListener("pointermove", e => { if (!pdrag) return; prot.z = pdrag.rz + (e.clientX-pdrag.x)*.4; prot.x = Math.max(0, Math.min(75, pdrag.rx - (e.clientY-pdrag.y)*.3)); pApply(); });

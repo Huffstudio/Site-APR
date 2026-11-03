@@ -225,6 +225,15 @@ footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
 .pmodes button[aria-pressed="true"]{background:var(--night);color:#fff}
 .phint{position:absolute;left:12px;bottom:12px;font-size:11px;color:#4b5563;background:rgba(255,255,255,.8);padding:3px 10px;border-radius:999px;pointer-events:none}
 .pstage:not(.is3d) .phint{display:none}
+.rooms{position:absolute;inset:0}
+.pstage.is3d .rooms{display:none}
+.room-hs{position:absolute;border-radius:4px;cursor:zoom-in;border:1.5px solid transparent;transition:background .35s ease,border-color .35s ease}
+.room-hs span{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) scale(.92);background:rgba(11,16,22,.86);color:#fff;font-size:12px;font-weight:600;padding:5px 11px;border-radius:999px;white-space:nowrap;opacity:0;transition:opacity .35s ease,transform .35s ease;pointer-events:none}
+.room-hs:hover,.room-hs:focus-visible,.room-hs.on{background:rgba(124,180,255,.16);border-color:rgba(60,120,210,.55)}
+.room-hs:hover span,.room-hs:focus-visible span,.room-hs.on span{opacity:1;transform:translate(-50%,-50%) scale(1)}
+.pstage.zoomed .room-hs{cursor:pointer}
+.pback{position:absolute;left:12px;top:12px;z-index:2;border:0;background:var(--night);color:#fff;font-size:12px;font-weight:700;padding:7px 14px;border-radius:999px}
+@media (hover:none){.room-hs span{font-size:11px}}
 .plan-img figcaption{background:var(--panel);color:var(--muted);font-size:12px;padding:10px 14px}
 .plan-side{display:grid;gap:18px;position:sticky;top:76px;min-width:0}
 .seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;padding:3px;gap:3px;justify-self:start}
@@ -301,7 +310,8 @@ footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
     <div class="plans-grid">
       <figure class="plan-img">
         <div class="pstage" id="pstage">
-          <div class="pmodel" id="pmodel"><img id="planImg" alt="" decoding="async"></div>
+          <div class="pmodel" id="pmodel"><img id="planImg" alt="" decoding="async"><div class="rooms" id="rooms"></div></div>
+          <button class="pback" id="pback" hidden>Ver planta inteira</button>
           <div class="pmodes"><button data-m="2d">2D</button><button data-m="3d">3D</button></div>
           <span class="phint">Arraste para girar</span>
         </div>
@@ -706,7 +716,7 @@ function renderPlans(){
   document.querySelectorAll(".type").forEach(b => b.onclick = () => { selTipo = b.dataset.tipo; renderPlans(); });
   const u = UNIT_TYPES[selTipo];
   const src = selTipo==="U" ? IMGS.U : IMGS[selTorre][selTipo];
-  if (planImg.getAttribute("src") !== src){ planImg.style.opacity = 0; planImg.onload = () => planImg.style.opacity = 1; planImg.src = src; }
+  if (planImg.getAttribute("src") !== src){ planImg.style.opacity = 0; planImg.onload = () => planImg.style.opacity = 1; planImg.src = src; pRooms(selTipo==="U" ? "U" : selTorre+selTipo); }
   planImg.alt = `Planta humanizada ${u.nome}, Torre ${selTorre}`;
   planCap.textContent = selTipo==="U" ? `${u.nome} · ${u.area} · ${u.suites} suítes · planta oficial da Torre B` : `Torre ${selTorre} · ${u.nome} · ${u.area} · planta oficial`;
   document.getElementById("specs2").innerHTML = `<div><dt>Área privativa</dt><dd>${u.area}</dd></div><div><dt>Suítes</dt><dd>${u.suites}</dd></div><div><dt>Por andar</dt><dd>${selTipo==="U"?"Andar inteiro":"2 aptos"}</dd></div>`;
@@ -717,13 +727,43 @@ function renderPlans(){
 document.querySelectorAll(".seg button").forEach(b => b.onclick = () => { selTorre = b.dataset.torre; renderPlans(); });
 // planta 2D / 3D girável
 const pstage = document.getElementById("pstage"), pmodel = document.getElementById("pmodel");
-let pmode = "3d"; const prot = {x:50, z:-28};
+let pmode = "2d"; const prot = {x:50, z:-28};
 function pApply(){
   pstage.classList.toggle("is3d", pmode==="3d");
-  pmodel.style.transform = pmode==="3d" ? `rotateX(${prot.x}deg) rotateZ(${prot.z}deg) scale(.86)` : "none";
+  if (pmode==="3d"){ pmodel.style.transformOrigin = "50% 50%"; pmodel.style.transform = `rotateX(${prot.x}deg) rotateZ(${prot.z}deg) scale(.86)`; }
+  else if (!zoomRoom) pmodel.style.transform = "none";
   pstage.querySelectorAll(".pmodes button").forEach(b => b.setAttribute("aria-pressed", b.dataset.m===pmode));
 }
-pstage.querySelectorAll(".pmodes button").forEach(b => b.onclick = () => { pmode = b.dataset.m; pApply(); });
+pstage.querySelectorAll(".pmodes button").forEach(b => b.onclick = () => { pmode = b.dataset.m; pZoom(null); pApply(); });
+// cômodos de cada planta, em % da imagem: [nome, x0, y0, x1, y1]
+const ROOMS = {
+  A02:[["Jantar",42,1,74,25],["Cozinha gourmet",74,1,98,27],["Living",42,25,80,57],["Suíte",23,29,41,50],["Banho",3,29,23,37],["Banho suíte master",3,37,23,50],["Suíte master",3,50,19,86],["Closet master",19,50,35,70],["Suíte",23,70,42,92],["Suíte",42,73,61,92],["Banho",50,57,61,72],["Lavabo e adega",61,57,72,72],["Banho",61,72,72,91]],
+  A01:[["Cozinha gourmet",3,1,33,28],["Jantar",33,1,64,28],["Living",33,28,65,60],["Suíte master",65,29,98,60],["Banho suíte master",74,60,98,75],["Suíte",45,70,65,92],["Suíte",65,72,86,92],["Banho",86,75,98,92],["Lavabo e adega",32,59,44,72],["Banho",44,59,54,70],["Área de serviço",20,75,44,92]],
+  B02:[["Jantar",42,74,76,98],["Cozinha gourmet",76,72,98,98],["Living",42,42,80,74],["Suíte master",3,13,22,45],["Closet master",20,30,33,50],["Banho",3,5,22,13],["Banho suíte master",3,46,23,58],["Banho",3,58,23,68],["Suíte",22,8,42,28],["Suíte",42,8,60,27],["Suíte",23,53,42,70],["Banho",60,8,72,25],["Lavabo e adega",60,25,72,40]],
+  B01:[["Cozinha gourmet",2,70,30,98],["Jantar",30,70,60,98],["Living",30,40,61,70],["Suíte master",61,40,94,70],["Banho suíte master",70,27,94,40],["Suíte",40,7,61,30],["Suíte",61,7,80,28],["Banho",80,7,94,28],["Banho",40,30,50,40],["Lavabo e adega",30,25,40,40],["Área de serviço",15,7,30,25]],
+  U:[["Living",2,38,18,66],["Jantar",18,38,38,66],["Cozinha gourmet",18,5,38,38],["Suíte",2,5,18,36],["Bar e jantar",18,66,55,96],["Lounge",55,66,90,96],["Home office",54,48,70,66],["Suíte",58,5,74,40],["Suíte",74,5,86,25],["Suíte master",84,10,96,42],["Suíte",72,45,86,66]]
+};
+const roomsEl = document.getElementById("rooms"), pback = document.getElementById("pback");
+let zoomRoom = null;
+function pRooms(key){
+  zoomRoom = null; pZoom(null);
+  roomsEl.innerHTML = (ROOMS[key]||[]).map(([n,x0,y0,x1,y1],i) =>
+    `<button class="room-hs" data-i="${i}" style="left:${x0}%;top:${y0}%;width:${x1-x0}%;height:${y1-y0}%" aria-label="${n}"><span>${n}</span></button>`).join("");
+  roomsEl.querySelectorAll(".room-hs").forEach(b => b.onclick = e => { e.stopPropagation(); pZoom(b); });
+}
+// clicar num cômodo: ele vem para o centro do quadro, ampliado
+function pZoom(btn){
+  roomsEl.querySelectorAll(".room-hs").forEach(b => b.classList.toggle("on", b===btn));
+  zoomRoom = btn; pstage.classList.toggle("zoomed", !!btn); pback.hidden = !btn;
+  if (!btn){ if (pmode==="2d") pmodel.style.transform = "none"; return; }
+  const W = pmodel.offsetWidth, H = pmodel.offsetHeight;
+  const rx = (btn.offsetLeft + btn.offsetWidth/2), ry = (btn.offsetTop + btn.offsetHeight/2);
+  const sc = Math.max(1.5, Math.min(3.2, pstage.clientWidth*.75/btn.offsetWidth, pstage.clientHeight*.75/btn.offsetHeight));
+  const dx = pstage.clientWidth/2 - (pmodel.offsetLeft + rx), dy = pstage.clientHeight/2 - (pmodel.offsetTop + ry);
+  pmodel.style.transformOrigin = `${rx}px ${ry}px`;
+  pmodel.style.transform = `translate(${dx}px,${dy}px) scale(${sc})`;
+}
+pback.onclick = () => pZoom(null);
 let pdrag = null;
 pstage.addEventListener("pointerdown", e => { if (pmode!=="3d" || e.target.closest(".pmodes")) return; pdrag = {x:e.clientX, y:e.clientY, rx:prot.x, rz:prot.z}; pstage.setPointerCapture(e.pointerId); pstage.classList.add("dragging"); });
 pstage.addEventListener("pointermove", e => { if (!pdrag) return; prot.z = pdrag.rz + (e.clientX-pdrag.x)*.4; prot.x = Math.max(0, Math.min(75, pdrag.rx - (e.clientY-pdrag.y)*.3)); pApply(); });

@@ -1,5 +1,11 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#1A0C10">
 <title>Gran Reserva Residence</title>
-<meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@300;400;500&family=Marcellus&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
 <style>
@@ -19,7 +25,7 @@
 html{scroll-behavior:smooth}
 html.lenis,html.lenis body{height:auto}
 .lenis.lenis-smooth{scroll-behavior:auto!important}
-body{background:var(--night);color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.6;overflow-x:hidden}
+body{margin:0;background:var(--night);color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.6;overflow-x:hidden}
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:#201a24}
 a{color:inherit}
 button{font:inherit;color:inherit;cursor:pointer}
@@ -309,6 +315,9 @@ footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
 .wfab svg{width:18px;height:18px}
 @media (max-width:900px){.reserve-grid{grid-template-columns:minmax(0,1fr)}.rrow{grid-template-columns:minmax(0,1fr)}}
 </style>
+</head>
+<body>
+
 
 <header class="bar">
   <div class="wrap">
@@ -872,3 +881,6 @@ document.getElementById("rform").addEventListener("submit", e => {
 });
 })();
 </script>
+
+</body>
+</html>

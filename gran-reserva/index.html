@@ -4,10 +4,10 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@300;400;500&family=Marcellus&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
 <style>
 /* Layout: torre 3D girável como protagonista sobre um céu de grafite azulado; depois o prédio vira um seletor de unidades.
-   Identidade Gran Reserva em versão noturna: céu de pôr do sol que escurece até o tom ameixa-café das páginas, com o dourado das molduras de LED como destaque e o vinho do selo. */
+   Identidade Gran Reserva em versão noturna: céu azul-marinho que se funde às páginas, com o dourado das molduras de LED como destaque e o vinho do selo. */
 :root{
-  --night:#181214; --deep:#1F181A; --panel:#271F21; --line:rgba(240,214,190,.12);
-  --fg:#F2E7DD; --muted:#B3A197; --amber:#D6A764; --amber-soft:rgba(214,167,100,.10);
+  --night:#0E121B; --deep:#121827; --panel:#182032; --line:rgba(200,215,240,.12);
+  --fg:#EEF0F4; --muted:#9AA4B6; --amber:#D6A764; --amber-soft:rgba(214,167,100,.10);
   --gold:#D6A764;
   --ok:#5FD6A8; --hold:#F2B35E; --sold:#46505E;
   --display:"Marcellus", Georgia, serif;
@@ -45,7 +45,7 @@ h2 em,h1 em{font-style:normal;color:inherit}
 
 /* intro scroll */
 .intro{position:relative}
-.stage{position:relative;height:100vh;height:100svh;overflow:hidden;background:radial-gradient(60% 40% at 72% 70%,rgba(255,190,135,.38),transparent 70%),linear-gradient(180deg,#232338 0%,#3D3655 26%,#7A5C76 48%,#C98B7B 60%,#8A5A5C 74%,#3A2629 88%,var(--night) 100%)}
+.stage{position:relative;height:100vh;height:100svh;overflow:hidden;background:radial-gradient(55% 45% at 72% 62%,rgba(120,150,210,.16),transparent 70%),linear-gradient(180deg,#0B1020 0%,#121B33 38%,#18233F 62%,#121A2C 82%,var(--night) 100%)}
 .stage::before{content:"";position:absolute;inset:auto 0 0 0;height:55%;pointer-events:none;
   background:none;
   -webkit-mask-image:radial-gradient(70% 90% at 65% 100%,#000,transparent 75%);mask-image:radial-gradient(70% 90% at 65% 100%,#000,transparent 75%)}
@@ -486,13 +486,13 @@ function init3D(){
   host.appendChild(renderer.domElement);
 
   const scene = new THREE.Scene();
-  scene.fog = new THREE.Fog(0x3a2629, 120, 260);
+  scene.fog = new THREE.Fog(0x111a2c, 120, 260);
   renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   // céu de fim de tarde só para reflexo nos vidros (não aparece no fundo)
   {
     const sc = document.createElement("canvas"); sc.width = 4; sc.height = 256;
     const sg = sc.getContext("2d"), lg = sg.createLinearGradient(0,0,0,256);
-    lg.addColorStop(0,"#232338"); lg.addColorStop(.3,"#5a4a6e"); lg.addColorStop(.46,"#e7b48f"); lg.addColorStop(.5,"#ffd7ad"); lg.addColorStop(.54,"#4a3a3a"); lg.addColorStop(1,"#120e10");
+    lg.addColorStop(0,"#0a0f1e"); lg.addColorStop(.3,"#1b2846"); lg.addColorStop(.46,"#5f7aa8"); lg.addColorStop(.5,"#a9bfe2"); lg.addColorStop(.54,"#1c2333"); lg.addColorStop(1,"#080b12");
     sg.fillStyle = lg; sg.fillRect(0,0,4,256);
     const st = new THREE.CanvasTexture(sc); st.encoding = THREE.sRGBEncoding;
     const envScene = new THREE.Scene();
@@ -502,11 +502,11 @@ function init3D(){
     scene.environment = new THREE.PMREMGenerator(renderer).fromScene(envScene,.03).texture;
   }
   const cam = new THREE.PerspectiveCamera(30, 1, .1, 500);
-  scene.add(new THREE.HemisphereLight(0xb7a6cf, 0x2a1c18, .55));
-  const key = new THREE.DirectionalLight(0xffc49a, 1.0); key.position.set(-30,55,35); scene.add(key);
+  scene.add(new THREE.HemisphereLight(0x8fa6d6, 0x0e121b, .55));
+  const key = new THREE.DirectionalLight(0xc8d6f2, .9); key.position.set(-30,55,35); scene.add(key);
   key.castShadow = true; key.shadow.mapSize.set(2048,2048); key.shadow.bias = -.0005; key.shadow.radius = 4;
   Object.assign(key.shadow.camera,{left:-26,right:26,top:46,bottom:-6,near:10,far:140}); key.shadow.camera.updateProjectionMatrix();
-  const rim = new THREE.DirectionalLight(0x8c7cff, .7); rim.position.set(35,25,-40); scene.add(rim);
+  const rim = new THREE.DirectionalLight(0x5f7fd0, .8); rim.position.set(35,25,-40); scene.add(rim);
   const base = new THREE.PointLight(0xffc27a, 1.2, 40); base.position.set(0,2,10); scene.add(base);
 
   const tower = new THREE.Group(); scene.add(tower);
@@ -599,7 +599,7 @@ function init3D(){
   // chão difuso: brilho radial que se dissolve no fundo
   const cv2 = document.createElement("canvas"); cv2.width = cv2.height = 256;
   const g2 = cv2.getContext("2d"), grd = g2.createRadialGradient(128,128,0,128,128,128);
-  grd.addColorStop(0,"rgba(255,200,140,.35)"); grd.addColorStop(.35,"rgba(200,130,100,.12)"); grd.addColorStop(1,"rgba(24,18,20,0)");
+  grd.addColorStop(0,"rgba(170,190,235,.26)"); grd.addColorStop(.35,"rgba(90,115,170,.10)"); grd.addColorStop(1,"rgba(14,18,27,0)");
   g2.fillStyle = grd; g2.fillRect(0,0,256,256);
   const ground = new THREE.Mesh(new THREE.PlaneGeometry(70,70), new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(cv2), transparent:true, depthWrite:false}));
   ground.rotation.x = -Math.PI/2; ground.position.y = .01; scene.add(ground);

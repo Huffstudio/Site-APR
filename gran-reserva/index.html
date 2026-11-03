@@ -405,7 +405,7 @@ function init3D(){
   // Gran Reserva Residence: duas torres sobre embasamento, fachada marrom com molduras de LED (base: maquete física)
   const panels = [], solids = [];
   const PH = 6, FH = 1.15, NF = 24, TOP = PH + NF*FH;
-  const brown  = new THREE.MeshStandardMaterial({color:0x3b2822, roughness:.72, metalness:.15});
+  const brown  = new THREE.MeshStandardMaterial({color:0x4a2f25, roughness:.7, metalness:.15});
   const brown2 = new THREE.MeshStandardMaterial({color:0x553629, roughness:.7, metalness:.1});
   const dark   = new THREE.MeshStandardMaterial({color:0x24282d, roughness:.55, metalness:.45});
   const slab   = new THREE.MeshStandardMaterial({color:0x8a8f96, roughness:.5, metalness:.3});
@@ -413,7 +413,7 @@ function init3D(){
   const railMat= new THREE.MeshStandardMaterial({color:0xcfe4ff, roughness:.05, metalness:.2, transparent:true, opacity:.2, side:THREE.DoubleSide, depthWrite:false});
   const green  = new THREE.MeshStandardMaterial({color:0x2f5b39, roughness:.8});
   const trunk  = new THREE.MeshStandardMaterial({color:0x6b5440, roughness:.9});
-  const litMats = [.38,.5,.62,.75].map(i => new THREE.MeshStandardMaterial({color:0x1b1712, roughness:.08, metalness:.7, emissive:0xffd6a0, emissiveIntensity:i}));
+  const litMats = [.16,.22,.3,.4].map(i => new THREE.MeshStandardMaterial({color:0x1b1712, roughness:.08, metalness:.7, emissive:0xffcf94, emissiveIntensity:i}));
   const offMat = new THREE.MeshStandardMaterial({color:0x14181d, roughness:.06, metalness:.85, emissive:0x0b0d10, emissiveIntensity:.2});
   const hoverMat = new THREE.MeshStandardMaterial({color:0x1b2430, roughness:.08, metalness:.5, emissive:0x9cd3ff, emissiveIntensity:.9});
   const add = (mesh,parent,x,y,z,ry=0) => { mesh.position.set(x,y,z); mesh.rotation.y = ry; (parent||tower).add(mesh); return mesh; };
@@ -438,7 +438,7 @@ function init3D(){
         for (let f=0; f<NF; f++){
           const y = PH + f*FH + FH/2;
           if (c.t==="big" || c.t==="small"){
-            const m = new THREE.Mesh(new THREE.PlaneGeometry(cw-(c.t==="big"?.22:.34), FH-(c.t==="big"?.28:.4)), pick(.82));
+            const m = new THREE.Mesh(new THREE.PlaneGeometry(cw-(c.t==="big"?.22:.34), FH-(c.t==="big"?.5:.58)), pick(.7));
             add(m, g, ...fc.p(tc,y,.02), fc.ry); m.userData.mat = m.material; panels.push(m);
           } else if (c.t==="dots"){
             [-.22,.22].forEach(o => add(new THREE.Mesh(new THREE.PlaneGeometry(.2,.24), pick(.7)), g, ...fc.p(tc+o*cw,y,.02), fc.ry));

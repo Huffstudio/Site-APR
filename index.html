@@ -224,7 +224,6 @@ body.locked{overflow:hidden}
   <div class="emp-grow" id="empGrow"></div>
   <div class="emp-load" id="empLoad"><span></span>Carregando o empreendimento</div>
   <iframe id="empFrame" title="Gran Reserva Residence" allow="fullscreen"></iframe>
-  <button class="emp-back" id="empBack" type="button"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M12.5 4 6.5 10l6 6" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>Haacke</button>
 </div>
 
 <footer><div class="wrap"><span>Haacke · Arquitetura que se sente, arte que se habita</span><span>Prévia de apresentação · imagens ilustrativas</span></div></footer>
@@ -283,7 +282,7 @@ body.locked{overflow:hidden}
     if (push !== false && location.hash) setHash(location.pathname + location.search);
   }
   document.querySelectorAll("[data-emp]").forEach(c => c.addEventListener("click", e => { e.preventDefault(); openEmp(c.dataset.emp, c); }));
-  document.getElementById("empBack").onclick = () => closeEmp();
+  addEventListener("message", e => { if (e.data === "haacke:voltar" && e.source === frame.contentWindow) closeEmp(); });
   addEventListener("keydown", e => { if (e.key === "Escape") closeEmp(); });
   const route = () => { const k = location.hash.slice(1); if (SRC[k]) openEmp(k); else closeEmp(false); };
   addEventListener("popstate", route); addEventListener("hashchange", route);

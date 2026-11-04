@@ -48,6 +48,11 @@ h2 em,h1 em{font-style:normal;color:inherit}
 .bar nav a:hover{color:var(--fg)}
 .cta-sm{border:1px solid var(--gold);color:var(--gold);background:none;padding:7px 14px;border-radius:999px;font-size:12px;font-weight:600;letter-spacing:.04em;text-decoration:none;white-space:nowrap}
 @media (max-width:720px){.bar nav{display:none}}
+.bar-left{display:flex;align-items:center;gap:14px;min-width:0}
+.back-home{display:inline-flex;align-items:center;gap:6px;text-decoration:none;font-size:13px;font-weight:600;color:#F6EDE4;border:1px solid rgba(214,167,100,.45);border-radius:999px;padding:6px 12px 6px 8px;white-space:nowrap;transition:background .3s,color .3s}
+.back-home:hover{background:var(--gold);color:var(--night)}
+.back-home svg{width:15px;height:15px;flex:none}
+@media (max-width:420px){.back-home span{display:none}.back-home{padding:6px}.brand{letter-spacing:.2em}}
 
 /* intro scroll */
 .intro{position:relative}
@@ -325,7 +330,8 @@ footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
 
 <header class="bar">
   <div class="wrap">
-    <div class="brand"><svg viewBox="0 0 30 30" aria-hidden="true"><circle cx="15" cy="15" r="14" fill="#7E2622"/><circle cx="15" cy="15" r="10.5" fill="none" stroke="#E9C9A6" stroke-width=".8"/><text x="15" y="19.2" text-anchor="middle" font-family="Marcellus, Georgia, serif" font-size="11" fill="#F4E3CF">GR</text></svg>Gran Reserva</div>
+    <div class="bar-left"><a class="back-home" id="backHome" href="https://noexx33.github.io/site-vertice/" aria-label="Voltar para o site da Haacke"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M12.5 4 6.5 10l6 6" fill="none" stroke="currentColor" stroke-width="1.8"/></svg><span>Haacke</span></a>
+    <div class="brand"><svg viewBox="0 0 30 30" aria-hidden="true"><circle cx="15" cy="15" r="14" fill="#7E2622"/><circle cx="15" cy="15" r="10.5" fill="none" stroke="#E9C9A6" stroke-width=".8"/><text x="15" y="19.2" text-anchor="middle" font-family="Marcellus, Georgia, serif" font-size="11" fill="#F4E3CF">GR</text></svg>Gran Reserva</div></div>
     <nav><a href="#unidades">Plantas</a><a href="#ambientes">Ambientes</a><a href="#lazer">Lazer</a><a href="#reservar">Reservar</a></nav>
     <a class="cta-sm" href="#reservar">Reservar</a>
   </div>
@@ -937,6 +943,12 @@ window.grSelect = (torre, tipo, scroll) => {
   if (scroll){ const t = document.getElementById("unidades"); if (lenis) lenis.scrollTo(t,{offset:-60,duration:1.2}); else t.scrollIntoView({behavior:"smooth"}); }
 };
 renderPlans();
+
+/* ---------- voltar para o site da incorporadora ---------- */
+// dentro da página da Haacke, o botão fecha o empreendimento; aberto sozinho, leva para o site
+document.getElementById("backHome").addEventListener("click", e => {
+  if (window.parent !== window){ e.preventDefault(); window.parent.postMessage("haacke:voltar", "*"); }
+});
 
 /* ---------- reserva pelo WhatsApp ---------- */
 const WHATSAPP = ""; // número da equipe de vendas com DDI e DDD, só dígitos (ex.: 5566999990000)

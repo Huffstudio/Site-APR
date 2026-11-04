@@ -229,7 +229,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
 .pstage{position:relative;perspective:1500px;overflow:hidden;background:#f3f1ec;border-radius:6px;display:grid;place-items:center;min-height:min(70vh,640px)}
 .pstage.is3d{background:radial-gradient(80% 70% at 50% 45%,#eceae4,#d9d5cc);cursor:grab;touch-action:none;user-select:none}
 .pstage.dragging{cursor:grabbing}
-.pmodel{position:relative;transform-style:preserve-3d;transition:transform .8s cubic-bezier(.2,.7,.2,1);max-width:100%}
+.pmodel{position:relative;transform-style:preserve-3d;transition:transform .8s cubic-bezier(.2,.7,.2,1),opacity .5s ease;max-width:100%}
 .pstage.dragging .pmodel{transition:none}
 .pmodel img{position:relative;max-height:min(66vh,600px);width:auto;max-width:100%;margin:auto;-webkit-user-drag:none}
 .pstage.is3d .pmodel img{filter:drop-shadow(0 30px 30px rgba(20,24,30,.35))}
@@ -240,10 +240,12 @@ footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
 .pmodes button[aria-pressed="true"]{background:#fff;color:#2b1a1d}
 .phint{position:absolute;left:12px;bottom:12px;font-size:11px;color:#4b5563;background:rgba(255,255,255,.8);padding:3px 10px;border-radius:999px;pointer-events:none}
 .pstage:not(.is3d) .phint{display:none}
-.p3d{position:absolute;inset:0;cursor:grab;touch-action:none}
+.p3d{position:absolute;inset:0;cursor:grab;touch-action:none;opacity:0;transition:opacity .5s ease}
+.p3d.vis{opacity:1}
+.pstage.busy .pmodes{pointer-events:none}
 .p3d:active{cursor:grabbing}
 .p3d canvas{display:block;width:100%;height:100%}
-.pstage.is3d .pmodel{visibility:hidden}
+.pstage.is3d .pmodel{opacity:0;pointer-events:none}
 .rooms{position:absolute;inset:0}
 .pstage.is3d .rooms{display:none}
 .room-hs{position:absolute;border:0;padding:0;background:transparent;-webkit-tap-highlight-color:transparent;outline:none;cursor:zoom-in;border-radius:3px;transition:background .5s ease}
@@ -1164,10 +1166,10 @@ document.querySelectorAll(".seg button").forEach(b => b.onclick = () => { selTor
 const pstage = document.getElementById("pstage"), pmodel = document.getElementById("pmodel");
 let pmode = "2d";
 function pApply(){
-  pstage.classList.toggle("is3d", pmode==="3d");
   if (!zoomRoom) pmodel.style.transform = "none";
   pstage.querySelectorAll(".pmodes button").forEach(b => b.setAttribute("aria-pressed", b.dataset.m===pmode));
-  P3.show(pmode==="3d");
+  if (pmode==="3d"){ pstage.classList.add("is3d"); P3.show(true); }
+  else P3.show(false, () => pstage.classList.remove("is3d"));
 }
 pstage.querySelectorAll(".pmodes button").forEach(b => b.onclick = () => { pmode = b.dataset.m; pZoom(null); pApply(); });
 // cômodos de cada planta, em % da imagem: [nome, x0, y0, x1, y1]
@@ -1204,7 +1206,8 @@ function pZoom(btn){
 const WALLS = {"A02":[[42,1.5,98.5,1.5],[42,1.5,42,58],[98.5,1.5,98.5,24.5],[83,24.5,98.5,24.5],[83,24.5,83,41],[1.5,28,41,28],[1.5,28,1.5,92],[1.5,92,61,92],[23,28,23,43],[1.5,36.5,23,36.5],[1.5,43,23,43],[23,50,41,50],[13,50.5,23,50.5],[23,70,23,92],[23,70,33,70],[41.5,70,41.5,92],[42,74.5,49,74.5],[49,70.7,61,70.7],[61.5,58.5,61.5,92],[72.5,58.5,72.5,92],[52.3,58.5,72.5,58.5],[52.3,58.5,52.3,69.5],[52.3,69.5,61.5,69.5],[61.5,75.4,72.5,75.4],[61.5,80.6,72.5,80.6],[80,59,80,76],[84.5,41,84.5,84],[72.5,92,98.5,92],[98.5,41,98.5,92],[1.5,86,23,86]],"A01":[[2,1.5,64,1.5],[64,1.5,64,28],[2,1.5,2,28],[64,28,98,28],[98,28,98,92],[64.5,28,64.5,60],[2,28,19,28],[19,28,19,40],[2,40,19,40],[64.5,60,98,60],[74,60,74,75],[86,60,86,92],[74,75,98,75],[44,60,44,92],[44,70,65,70],[65,70,65,92],[19,92,98,92],[32,59,32,72],[32,59,54,59],[54,59,54,70],[44,70,54,70],[32,72,44,72],[19,40,19,92],[19,72,32,72],[32,75,32,92]],"B02":[[42,97.0,98.5,97.0],[42,97.0,42,41.4],[98.5,97.0,98.5,74.4],[83,74.4,98.5,74.4],[83,74.4,83,58.1],[1.5,70.9,41,70.9],[1.5,70.9,1.5,8.0],[1.5,8.0,61,8.0],[23,70.9,23,56.2],[1.5,62.6,23,62.6],[1.5,56.2,23,56.2],[23,49.3,41,49.3],[13,48.8,23,48.8],[23,29.6,23,8.0],[23,29.6,33,29.6],[41.5,29.6,41.5,8.0],[42,25.2,49,25.2],[49,28.9,61,28.9],[61.5,40.9,61.5,8.0],[72.5,40.9,72.5,8.0],[52.3,40.9,72.5,40.9],[52.3,40.9,52.3,30.1],[52.3,30.1,61.5,30.1],[61.5,24.3,72.5,24.3],[61.5,19.2,72.5,19.2],[80,40.4,80,23.7],[84.5,58.1,84.5,15.9],[72.5,8.0,98.5,8.0],[98.5,58.1,98.5,8.0],[1.5,13.9,23,13.9]],"B01":[[2.3,96.3,63.0,96.3],[63.0,96.3,63.0,70.6],[2.3,96.3,2.3,70.6],[63.0,70.6,96.3,70.6],[96.3,70.6,96.3,8.5],[63.5,70.6,63.5,39.5],[2.3,70.6,18.9,70.6],[18.9,70.6,18.9,58.9],[2.3,58.9,18.9,58.9],[63.5,39.5,96.3,39.5],[72.8,39.5,72.8,25.0],[84.6,39.5,84.6,8.5],[72.8,25.0,96.3,25.0],[43.4,39.5,43.4,8.5],[43.4,29.8,64.0,29.8],[64.0,29.8,64.0,8.5],[18.9,8.5,96.3,8.5],[31.7,40.5,31.7,27.9],[31.7,40.5,53.2,40.5],[53.2,40.5,53.2,29.8],[43.4,29.8,53.2,29.8],[31.7,27.9,43.4,27.9],[18.9,58.9,18.9,8.5],[18.9,27.9,31.7,27.9],[31.7,25.0,31.7,8.5]],"U":[[2,7,32,7],[60,7,96,7],[2,7,2,66],[2,66,18,66],[18,66,18,96],[18,96,90,96],[90,70,90,96],[95,7,95,70],[90,70,95,70],[2,36,18,36],[18,7,18,36],[38,8,38,66],[58,8,58,48],[38,66,55,66],[58,40,74,40],[74,7,74,40],[74,25,86,25],[86,10,86,42],[86,42,95,42],[72,45,72,66],[72,45,86,45],[86,45,86,66],[54,66,95,66],[54,48,54,66],[54,48,70,48]]};
 const P3 = (() => {
   const host = document.getElementById("p3d");
-  let ok = !!window.THREE, r, scene, cam, floor, wallsG, tex, key = null, built = null, on = false, rise = 1, riseT0 = 0;
+  let ok = !!window.THREE, r, scene, cam, floor, wallsG, tex, key = null, built = null, on = false, entering = false, tl = null, dims = {W:10,H:10};
+  const anim = !!window.gsap && !matchMedia("(prefers-reduced-motion: reduce)").matches;
   const view = {az:-.6, pol:.95, dist:16};
   function init(){
     try { r = new THREE.WebGLRenderer({antialias:true, alpha:true}); } catch(e){ ok = false; return; }
@@ -1223,7 +1226,7 @@ const P3 = (() => {
     wallsG = new THREE.Group(); scene.add(wallsG);
     // arrastar para girar e inclinar
     let d = null;
-    host.addEventListener("pointerdown", e => { d = {x:e.clientX, y:e.clientY, az:view.az, pol:view.pol}; host.setPointerCapture(e.pointerId); });
+    host.addEventListener("pointerdown", e => { if (tl && tl.isActive()) return; d = {x:e.clientX, y:e.clientY, az:view.az, pol:view.pol}; host.setPointerCapture(e.pointerId); });
     host.addEventListener("pointermove", e => { if (!d) return; view.az = d.az - (e.clientX-d.x)*.008; view.pol = Math.max(.25, Math.min(1.35, d.pol - (e.clientY-d.y)*.006)); });
     const up = () => d = null; host.addEventListener("pointerup", up); host.addEventListener("pointercancel", up);
     host.addEventListener("wheel", e => { e.preventDefault(); e.stopPropagation(); view.dist = Math.max(9, Math.min(26, view.dist + e.deltaY*.01)); }, {passive:false});
@@ -1249,11 +1252,36 @@ const P3 = (() => {
       m.position.set((ax+bx)/2, HT/2, (az+bz)/2); m.rotation.y = -Math.atan2(bz-az, bx-ax);
       m.castShadow = true; m.receiveShadow = true; wallsG.add(m);
     });
-    view.dist = Math.max(W, H) * (cam.aspect < 1 ? 2.4 : 2.05); built = key; rise = 0; riseT0 = performance.now();
+    dims = {W, H}; built = key;
+    if (entering){ entering = false; intro(); }
+    else if (anim){ wallsG.scale.y = .001; gsap.to(wallsG.scale,{y:1,duration:.9,ease:"power3.out"}); }
+  }
+  // câmera olhando de cima: o 3D começa exatamente como a planta 2D
+  const topDist = () => Math.max(dims.H, dims.W / cam.aspect) / (2*Math.tan(16*Math.PI/180)) * 1.06;
+  const orbitDist = () => Math.max(dims.W, dims.H) * (cam.aspect < 1 ? 2.4 : 2.05);
+  function intro(){
+    if (tl) tl.kill();
+    if (!anim){ Object.assign(view,{az:-.6,pol:.95,dist:orbitDist()}); wallsG.scale.y = 1; host.classList.add("vis"); return; }
+    Object.assign(view,{az:0,pol:.012,dist:topDist()}); wallsG.scale.y = .001;
+    pstage.classList.add("busy");
+    tl = gsap.timeline({onComplete:()=>pstage.classList.remove("busy")})
+      .add(()=>host.classList.add("vis"))
+      .to(view,{pol:.95,az:-.6,dist:orbitDist(),duration:1.6,ease:"power3.inOut"},.35)
+      .to(wallsG.scale,{y:1,duration:1.1,ease:"power3.out"},1.0);
+  }
+  // volta para cima, abaixa as paredes e cruza com a planta 2D; "swap" troca a planta, "end" desliga o 3D
+  function outro(swap, end){
+    if (tl) tl.kill();
+    if (!anim || !built){ host.classList.remove("vis"); swap(); end(); return; }
+    pstage.classList.add("busy");
+    tl = gsap.timeline({onComplete:()=>{ pstage.classList.remove("busy"); end(); }})
+      .to(wallsG.scale,{y:.001,duration:.6,ease:"power2.in"},0)
+      .to(view,{pol:.012,az:0,dist:topDist(),duration:1.2,ease:"power3.inOut"},.15)
+      .add(()=>{ host.classList.remove("vis"); swap(); },1.25)
+      .to({},{duration:.55});
   }
   function loop(t){
     if (!on) return; requestAnimationFrame(loop);
-    if (rise < 1){ rise = Math.min(1, (t - riseT0) / 900); const e = 1 - Math.pow(1-rise, 3); wallsG.scale.y = Math.max(.001, e); }
     const s = Math.sin(view.pol);
     cam.position.set(Math.sin(view.az)*s*view.dist, Math.cos(view.pol)*view.dist, Math.cos(view.az)*s*view.dist);
     cam.lookAt(0, 0, 0); r.render(scene, cam);
@@ -1261,10 +1289,18 @@ const P3 = (() => {
   return {
     ok: () => ok,
     setPlan(k){ key = k; if (on && r) build(); },
-    show(v){
-      if (!ok) return;
-      host.hidden = !v; if (v === on) return; on = v;
-      if (v){ if (!r) init(); if (!ok) { host.hidden = true; return; } size(); build(); requestAnimationFrame(loop); }
+    show(v, done){
+      if (!ok){ if (done) done(); return; }
+      if (v){
+        if (on && !(tl && tl.isActive())) return;
+        const wasOn = on; on = true; host.hidden = false;
+        if (!r) init(); if (!ok){ host.hidden = true; on = false; return; }
+        size(); if (!wasOn) requestAnimationFrame(loop);
+        if (built === key && wasOn) intro(); else { entering = true; build(); }
+      } else {
+        if (!on){ host.hidden = true; if (done) done(); return; }
+        outro(() => { if (done) done(); }, () => { on = false; host.hidden = true; });
+      }
     }
   };
 })();

@@ -1,5 +1,6 @@
-# Gran Reserva Residence
+# Haacke · site de empreendimentos
 
-Prévia do site de apresentação do Gran Reserva Residence (Sorriso, MT).
+Prévia do site da incorporadora com o Gran Reserva Residence.
 
-No ar em https://noexx33.github.io/site-vertice/
+- Página inicial: https://noexx33.github.io/site-vertice/
+- Gran Reserva: abre dentro da página inicial (arquivo em gran-reserva/)

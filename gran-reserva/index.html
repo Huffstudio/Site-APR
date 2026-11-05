@@ -1089,7 +1089,7 @@ function init3D(){
   resize(); addEventListener("resize", resize);
 
   // girar arrastando (horizontal); rolar a página continua funcionando no celular
-  let rotY = -.5, vel = 0, drag = null, hover = null;
+  let rotY = 0, vel = 0, idleAt = 0, drag = null, hover = null;
   const el3 = renderer.domElement, ray = new THREE.Raycaster(), mouse = new THREE.Vector2();
   let downAt = null;
   el3.addEventListener("pointerdown", e => { drag = {x:e.clientX}; downAt = {x:e.clientX, y:e.clientY}; vel = 0; el3.setPointerCapture(e.pointerId); });
@@ -1146,8 +1146,10 @@ function init3D(){
   const loop = () => {
     requestAnimationFrame(loop);
     if (!visible) return;
-    if (!drag){ rotY += vel; vel *= .94; if (!reduce) rotY += .0016; }
-    tower.rotation.y = rotY + scrollP*1.4;
+    // fica parado de frente; se alguém girar arrastando, volta sozinho para a frente depois de um instante
+    if (!drag){ rotY += vel; vel *= .9; if (Math.abs(vel) < .0005 && performance.now() - idleAt > 1800) rotY += (Math.round(rotY/(Math.PI*2))*Math.PI*2 - rotY)*.04; }
+    else idleAt = performance.now();
+    tower.rotation.y = rotY;
     const a = THREE.MathUtils.degToRad(16 - scrollP*6);
     const dd = dist*(1 - scrollP*.12);
     cam.position.set(0, target.y + Math.sin(a)*dd + scrollP*3, Math.cos(a)*dd);
@@ -1745,7 +1747,7 @@ stageEl.classList.add("has3d");
     const v3 = b.dataset.v === "3d";
     if (v3 && !has3d){ has3d = init3D(); if (!has3d){ b.disabled = true; return; } if (mb.getAttribute("aria-pressed") === "true") window.grStatusMode(true); }
     views.forEach(x => x.setAttribute("aria-pressed", x === b)); stageEl.classList.toggle("mode3d", v3);
-    hintEl.textContent = v3 ? "Arraste para girar · toque numa janela para ver o apartamento" : "Passe o mouse num andar · clique para ver as plantas";
+    hintEl.textContent = v3 ? "Toque numa janela para ver o apartamento · arraste para girar" : "Passe o mouse num andar · clique para ver as plantas";
     window.dispatchEvent(new Event("resize"));
   });
 }

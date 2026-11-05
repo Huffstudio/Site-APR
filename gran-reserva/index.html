@@ -1570,7 +1570,7 @@ const TOUR = window.TOUR = (() => {
     data.items.filter(it => !["coffee","nightstand","toilet"].includes(it.t)).forEach(it => { g.save(); g.translate((it.x+data.w/2)*S,(it.z+data.d/2)*S); g.rotate(it.r); g.fillRect(-it.w/2*S,-it.d/2*S,it.w*S,it.d*S); g.restore(); });
     const px = g.getImageData(0,0,W,H).data;
     occ = (x,z) => { const X = Math.round((x+data.w/2)*S), Y = Math.round((z+data.d/2)*S); if (X<0||Y<0||X>=W||Y>=H) return true; return px[(Y*W+X)*4+3] > 0; };
-    const furnG = new THREE.Group(); data.items.forEach(it => furnG.add(makeItem(it)));
+    const furnG = new THREE.Group(); curate(k, data.items).forEach(it => furnG.add(makeItem(it)));
     world.add(mergeByMaterial(furnG));
     chips.innerHTML = data.rooms.filter(rm => rm.n !== "Depósito" || true).map((rm,i) => `<button type="button" data-i="${i}">${rm.n}</button>`).join("");
     chips.querySelectorAll("button").forEach(b => b.onclick = () => goRoom(data.rooms[+b.dataset.i]));
@@ -1580,7 +1580,7 @@ const TOUR = window.TOUR = (() => {
   function fmats(){
     if (FM) return FM;
     const S = (c,r=.8,m=0) => new THREE.MeshStandardMaterial({color:c, roughness:r, metalness:m});
-    FM = {linen:S(0xd9d0c2,.95), sofa:S(0x8b8178,.95), sofa2:S(0x6f665d,.95), oak:S(0xa27c56,.55), walnut:S(0x5c4231,.5),
+    FM = {linen:S(0xd9d0c2,.95), sofa:S(0xeae5dc,.95), sofa2:S(0xd6cec2,.95), rug:S(0xa99d8e,1), rug2:S(0x8f857a,1), oak:S(0xa27c56,.55), walnut:S(0x5c4231,.5),
       stone:S(0xf0ece5,.25), white:S(0xf7f5f1,.35), duvet:S(0xf3efe7,.9), pillow:S(0xe9e0d0,.9), throw:S(0x7e2622,.85),
       metal:S(0x2a2a2d,.35,.7), brass:S(0xc9a36a,.3,.8), mirror:S(0xdfe6ea,.05,.9), porcelain:S(0xfbfbfb,.15),
       lamp:new THREE.MeshStandardMaterial({color:0xfff3df, emissive:0xffd9a6, emissiveIntensity:.9, roughness:1}),
@@ -1685,6 +1685,63 @@ const TOUR = window.TOUR = (() => {
     g.add(at(rbox(.38,.36,.16,M.porcelain,.04),0,.4,-.2));
     return g;
   }
+  /* ---------- arrumação dos móveis lidos da planta técnica ----------
+     a leitura automática confunde peças (mesa de jantar vira sofá, ilha vira mesa, as duas faces de um armário viram dois armários);
+     aqui cada peça vira o que ela é na planta humanizada */
+  function curate(k, items){
+    const tipo = k.slice(1), out = [], used = new Set(), social = rm => rm && (rm.n === "Living" || (rm.n === "Cozinha" && rm.a > 40));
+    const ws = items.map((it,i) => [it,i]).filter(([it]) => it.t === "wardrobe" || it.t === "bench");
+    for (const [a,i] of ws){ if (used.has(i)) continue;
+      for (const [b,j] of ws){ if (j <= i || used.has(j) || Math.abs(a.r-b.r) > .05 || Math.abs(a.w-b.w) > .25) continue;
+        const ux = Math.cos(a.r), uz = Math.sin(a.r), dx = b.x-a.x, dz = b.z-a.z, along = Math.abs(dx*ux+dz*uz), across = Math.abs(-dx*uz+dz*ux);
+        if (along < .25 && across < .45){ used.add(i); used.add(j); out.push({...a, t:"wardrobe", x:(a.x+b.x)/2, z:(a.z+b.z)/2, w:Math.max(a.w,b.w), d:Math.min(.65, across+Math.max(a.d,b.d))}); break; } } }
+    items.forEach((it,i) => {
+      if (used.has(i)) return; const rm = roomAt(it.x, it.z), ratio = it.w/it.d;
+      if (it.t === "dining"){ out.push({...it, t:"island"}); return; }
+      if (it.t === "sofa" && ratio < 1.25){ out.push({...it, t:"dining", w:2.7, d:1.9, r:tipo === "02" ? -Math.PI/2 : 0}); return; }
+      if (it.t === "sofa" && ratio < 1.65){
+        if (tipo === "02"){ out.push({...it, d:.95}); return; }
+        const ux = Math.cos(it.r), uz = Math.sin(it.r);
+        [-1,1].forEach(sg => out.push({...it, t:"armchair", x:it.x+ux*it.w/4*sg, z:it.z+uz*it.w/4*sg, w:.85, d:.85})); return; }
+      if (it.t === "sofa" && it.d > 1.3){ out.push({...it, t:"lsofa"}); return; }
+      if (it.t === "armchair" && it.w > 1.15 && it.d < 1 && social(rm)){ out.push({...it, t:"coffee", w:.95, d:.95}); return; }
+      if (it.t === "coffee" && rm && rm.a < 8 && !social(rm)){ out.push({...it, t:"wine", w:Math.max(it.w,it.d)*.85, d:.42, r:it.w >= it.d ? it.r : it.r + Math.PI/2}); return; }
+      if (it.t === "bench"){ out.push({...it, t:"wardrobe", d:.55}); return; }
+      out.push(it);
+    });
+    // tapetes: um sob cada cama e um sob o estar
+    out.filter(it => it.t === "bed").forEach(b => out.push({t:"rug", x:b.x, z:b.z, w:b.w+.9, d:b.d+1.3, r:b.r, h:.01}));
+    const liv = out.filter(it => (it.t === "lsofa" || it.t === "sofa" || it.t === "coffee" || it.t === "armchair") && social(roomAt(it.x,it.z)));
+    if (liv.length){ const cx = liv.reduce((a,b) => a+b.x,0)/liv.length, cz = liv.reduce((a,b) => a+b.z,0)/liv.length, ls = liv.find(x => x.t === "lsofa") || liv[0];
+      out.push({t:"rug", x:cx, z:cz, w:3.8, d:2.9, r:ls.r, h:.01, two:true}); }
+    const din = out.find(it => it.t === "dining"); if (din) out.push({t:"rug", x:din.x, z:din.z, w:3.4, d:2.4, r:din.r, h:.01});
+    return out;
+  }
+  function lsofa(w,d){
+    const M = fmats(), g = sofa(w, .95); g.position.z = -d/2 + .475;
+    const o = new THREE.Group(); o.add(g); const cd = d - .95;
+    o.add(at(rbox(.9,.22,cd,M.sofa2,.04), w/2-.45-.02, .06, -d/2+.95+cd/2));
+    o.add(at(rbox(.84,.16,cd-.04,M.sofa,.06), w/2-.45-.02, .28, -d/2+.95+cd/2));
+    return o;
+  }
+  function island(w,d){
+    const M = fmats(), g = new THREE.Group(), cd = Math.min(.95, d); const c = counter(w, cd); c.position.z = -(d-cd)/2; g.add(c);
+    const n = Math.max(2, Math.floor((w-.3)/.6));
+    for (let i=0;i<n;i++){ const x = -w/2+.15+(w-.3)/n*(i+.5), st = new THREE.Group();
+      st.add(at(new THREE.Mesh(new THREE.CylinderGeometry(.18,.17,.06,20),M.linen),0,.66,0));
+      st.add(at(new THREE.Mesh(new THREE.CylinderGeometry(.025,.025,.64,8),M.brass),0,.32,0));
+      st.add(at(new THREE.Mesh(new THREE.CylinderGeometry(.16,.16,.02,20),M.metal),0,.01,0));
+      st.position.set(x,0,-(d-cd)/2+cd/2+.28); g.add(st); }
+    return g;
+  }
+  function wine(w,d){
+    const M = fmats(), g = new THREE.Group();
+    g.add(at(rbox(w,2.1,d,M.walnut,.01),0,0,0));
+    for (let i=0;i<7;i++) g.add(at(rbox(w-.1,.02,.04,M.brass,.005),0,.25+i*.26,d/2));
+    return g;
+  }
+  function rug(w,d,two){ return at(rbox(w,.014,d,two ? fmats().rug2 : fmats().rug,.02),0,.005,0); }
+  function credenza(w,d){ const M = fmats(), g = new THREE.Group(); g.add(at(rbox(w,.55,Math.min(d,.45),M.oak,.02),0,.08,0)); return g; }
   function generic(w,h,d){ return at(rbox(w,h,d,fmats().linen,.04),0,0,0); }
   // distância livre até a parede numa direção (plano x,z)
   function wallDist(x,z,dx,dz,max=3){ let t = 0; while (t < max && !occW(x+dx*t, z+dz*t)) t += .05; return t; }
@@ -1701,7 +1758,12 @@ const TOUR = window.TOUR = (() => {
       if (Math.min(dPlusV,dMinusV) < .35) flip = dMinusV < dPlusV;                  // encosto na parede
       else if (rm){ const sx = rm.x-it.x, sz = rm.z-it.z; flip = (sx*vx+sz*vz) > 0; } // senão, de frente para o centro do ambiente
     }
+    else if (t === "wardrobe" && w > 2.5 && Math.min(dPlusV,dMinusV) > .25){ g = credenza(w,d); }
     else if (t === "wardrobe"){ g = wardrobe(w,d); flip = dMinusV < dPlusV; }
+    else if (t === "lsofa" || t === "island"){ g = t === "lsofa" ? lsofa(w,d) : island(w,d);
+      const rm = roomAt(it.x,it.z); if (Math.min(dPlusV,dMinusV) < .35) flip = dMinusV < dPlusV; else if (rm){ const sx = rm.x-it.x, sz = rm.z-it.z; flip = (sx*vx+sz*vz) > 0; } }
+    else if (t === "wine"){ g = wine(w,d); flip = dMinusV < dPlusV; const sh = Math.min(dPlusV,dMinusV) * (dPlusV < dMinusV ? 1 : -1); g.position.set(it.x+vx*sh, 0, it.z+vz*sh); g.rotation.y = -r + (flip ? Math.PI : 0); return g; }
+    else if (t === "rug"){ g = rug(w,d,it.two); }
     else if (t === "nightstand"){ g = nightstand(w,d); }
     else if (t === "coffee"){ g = coffee(w,d); }
     else if (t === "dining"){ g = dining(w,d); }
@@ -1844,6 +1906,7 @@ const TOUR = window.TOUR = (() => {
     build(k); top = true; ceil.visible = false; bgSave = bgSave || scene.background; scene.background = null; r.setClearColor(0x000000, 0);
     cam.fov = 30; size(); tgt.x = tgt.z = 0;
     // luz de maquete: sol baixo e quente com sombra macia, para os móveis ganharem volume
+    r.clippingPlanes = [new THREE.Plane(new THREE.Vector3(0,-1,0), WALL*.55 + .01)];   // corte da maquete: nada passa da altura das paredes
     r.toneMappingExposure = 1.08; key.castShadow = true; key.intensity = .95; key.position.set(-9, 16, 7);
     key.shadow.mapSize.set(2048, 2048); key.shadow.radius = 4; key.shadow.bias = -.0006; key.shadow.normalBias = .02;
     Object.assign(key.shadow.camera, {left:-13, right:13, top:13, bottom:-13, near:1, far:45}); key.shadow.camera.updateProjectionMatrix();
@@ -1861,7 +1924,7 @@ const TOUR = window.TOUR = (() => {
     return true;
   }
   function dollClose(done){
-    const fin = () => { on = false; cancelAnimationFrame(raf); doll = null; top = false; cam.fov = 70; key.castShadow = false; key.intensity = .6; key.position.set(-8,12,6); r.toneMappingExposure = .92; scene.background = bgSave; r.domElement.style.opacity = ""; tgt.x = tgt.z = 0; host.appendChild(r.domElement); if (done) done(); };
+    const fin = () => { on = false; cancelAnimationFrame(raf); doll = null; top = false; cam.fov = 70; r.clippingPlanes = []; key.castShadow = false; key.intensity = .6; key.position.set(-8,12,6); r.toneMappingExposure = .92; scene.background = bgSave; r.domElement.style.opacity = ""; tgt.x = tgt.z = 0; host.appendChild(r.domElement); if (done) done(); };
     if (!doll){ if (done) done(); return; }
     if (dtl) dtl.kill(); if (!window.gsap){ fin(); return; }
     const wg = world.userData.walls;

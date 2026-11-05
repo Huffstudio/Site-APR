@@ -1545,9 +1545,16 @@ const TOUR = window.TOUR = (() => {
   }
   function inPoly(poly,x,z){ let c = false; for (let i=0,j=poly.length-1;i<poly.length;j=i++){ const [xi,zi]=poly[i],[xj,zj]=poly[j];
     if (((zi>z)!==(zj>z)) && (x < (xj-xi)*(z-zi)/(zj-zi)+xi)) c = !c; } return c; }
+  // cada apartamento é montado uma vez só e guardado: abrir de novo é instantâneo
+  const CACHE = {};
+  function chipsFor(){
+    chips.innerHTML = data.rooms.map((rm,i) => `<button type="button" data-i="${i}">${rm.n}</button>`).join("");
+    chips.querySelectorAll("button").forEach(b => b.onclick = () => goRoom(data.rooms[+b.dataset.i]));
+  }
   function build(k){
+    if (world) scene.remove(world);
+    const hit = CACHE[k]; if (hit){ ({world, ceil, occ, occW, data} = hit); scene.add(world); chipsFor(); return; }
     data = TOUR_DATA[k]; const M = mats();
-    if (world){ scene.remove(world); world.traverse(o => { if (o.geometry) o.geometry.dispose(); }); }
     world = new THREE.Group(); scene.add(world);
     ceil = new THREE.Group(); world.add(ceil);
     data.rooms.forEach(rm => rm.p.forEach(p => {
@@ -1572,8 +1579,29 @@ const TOUR = window.TOUR = (() => {
     occ = (x,z) => { const X = Math.round((x+data.w/2)*S), Y = Math.round((z+data.d/2)*S); if (X<0||Y<0||X>=W||Y>=H) return true; return px[(Y*W+X)*4+3] > 0; };
     const furnG = new THREE.Group(); curate(k, data.items).forEach(it => furnG.add(makeItem(it)));
     world.add(mergeByMaterial(furnG));
-    chips.innerHTML = data.rooms.filter(rm => rm.n !== "Depósito" || true).map((rm,i) => `<button type="button" data-i="${i}">${rm.n}</button>`).join("");
-    chips.querySelectorAll("button").forEach(b => b.onclick = () => goRoom(data.rooms[+b.dataset.i]));
+    world.traverse(o => { if (o.isMesh){ o.castShadow = !(o.material && o.material.transparent); o.receiveShadow = true; } });
+    CACHE[k] = {world, ceil, occ, occW, data}; chipsFor();
+  }
+  // prepara os modelos e os shaders em segundo plano, um apartamento por vez, para o clique abrir sem travar
+  function prewarm(keys){
+    if (!window.THREE) return; if (!r) init();
+    const todo = keys.filter(k => TOUR_DATA[k] && !CACHE[k]); let busyW = false;
+    const step = () => { if (on) { setTimeout(step, 1500); return; } const k = todo.shift(); if (!k){ warmShaders(); return; }
+      const prev = world; build(k); scene.remove(world); world = prev; if (prev) scene.add(prev);
+      (window.requestIdleCallback || (f => setTimeout(f, 60)))(step); };
+    step();
+  }
+  let warmed = false;
+  function warmShaders(){
+    if (warmed || on) return; warmed = true;
+    const k = Object.keys(CACHE)[0]; if (!k) return;
+    const prev = world; build(k); dollLights(true); r.compile(scene, cam); dollLights(false); scene.remove(world); world = prev; if (prev) scene.add(prev);
+  }
+  function dollLights(v){
+    if (v){ r.clippingPlanes = [new THREE.Plane(new THREE.Vector3(0,-1,0), WALL*.55 + .01)]; r.toneMappingExposure = 1.08; key.castShadow = true; key.intensity = .95; key.position.set(-9, 16, 7);
+      const sm = innerWidth < 820 ? 1024 : 2048; key.shadow.mapSize.set(sm, sm); key.shadow.radius = 4; key.shadow.bias = -.0006; key.shadow.normalBias = .02;
+      Object.assign(key.shadow.camera, {left:-13, right:13, top:13, bottom:-13, near:1, far:45}); key.shadow.camera.updateProjectionMatrix(); }
+    else { r.clippingPlanes = []; key.castShadow = false; key.intensity = .6; key.position.set(-8,12,6); r.toneMappingExposure = .92; }
   }
   // ---------- móveis 3D modelados no código, no tamanho e posição de cada peça da planta técnica ----------
   let FM = null;
@@ -1906,25 +1934,21 @@ const TOUR = window.TOUR = (() => {
     build(k); top = true; ceil.visible = false; bgSave = bgSave || scene.background; scene.background = null; r.setClearColor(0x000000, 0);
     cam.fov = 30; size(); tgt.x = tgt.z = 0;
     // luz de maquete: sol baixo e quente com sombra macia, para os móveis ganharem volume
-    r.clippingPlanes = [new THREE.Plane(new THREE.Vector3(0,-1,0), WALL*.55 + .01)];   // corte da maquete: nada passa da altura das paredes
-    r.toneMappingExposure = 1.08; key.castShadow = true; key.intensity = .95; key.position.set(-9, 16, 7);
-    key.shadow.mapSize.set(2048, 2048); key.shadow.radius = 4; key.shadow.bias = -.0006; key.shadow.normalBias = .02;
-    Object.assign(key.shadow.camera, {left:-13, right:13, top:13, bottom:-13, near:1, far:45}); key.shadow.camera.updateProjectionMatrix();
-    world.traverse(o => { if (o.isMesh){ const gl = o.material && o.material.transparent; o.castShadow = !gl; o.receiveShadow = true; } });
+    dollLights(true);   // luz de maquete e corte na altura das paredes
     const wg = world.userData.walls, anim = window.gsap && !matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (!on){ on = true; lastT = 0; cancelAnimationFrame(raf); raf = requestAnimationFrame(loop); }
     if (dtl) dtl.kill();
-    if (!anim){ Object.assign(topView,{az:.55, pol:.92, dist:dollFit()}); wg.scale.y = .55; return true; }
-    if (swap){ Object.assign(topView,{az:.55, pol:.92, dist:dollFit()}); wg.scale.y = .001; dtl = gsap.to(wg.scale,{y:.55, duration:.9, ease:"power3.out"}); return true; }
-    Object.assign(topView,{az:0, pol:.02, dist:dollFit()*1.15}); wg.scale.y = .001;
+    if (!anim){ Object.assign(topView,{az:.62, pol:.9, dist:dollFit()}); wg.scale.y = .55; return true; }
+    if (swap){ Object.assign(topView,{az:.62, pol:.9, dist:dollFit()}); wg.scale.y = .001; dtl = gsap.to(wg.scale,{y:.55, duration:.9, ease:"power3.out"}); return true; }
+    Object.assign(topView,{az:.05, pol:.62, dist:dollFit()*1.9}); wg.scale.y = .001;
     r.domElement.style.opacity = 0;
-    dtl = gsap.timeline().to(r.domElement.style,{opacity:1, duration:.6},.1)
-      .to(topView,{az:.55, pol:.92, dist:dollFit(), duration:1.8, ease:"power3.inOut"},.35)
-      .to(wg.scale,{y:.55, duration:1.2, ease:"power3.out"},1.0);
+    dtl = gsap.timeline().to(r.domElement.style,{opacity:1, duration:.7, ease:"power1.out"},0)
+      .to(topView,{az:.62, pol:.9, dist:dollFit(), duration:2.1, ease:"expo.out"},0)
+      .to(wg.scale,{y:.55, duration:1.4, ease:"power3.out"},.35);
     return true;
   }
   function dollClose(done){
-    const fin = () => { on = false; cancelAnimationFrame(raf); doll = null; top = false; cam.fov = 70; r.clippingPlanes = []; key.castShadow = false; key.intensity = .6; key.position.set(-8,12,6); r.toneMappingExposure = .92; scene.background = bgSave; r.domElement.style.opacity = ""; tgt.x = tgt.z = 0; host.appendChild(r.domElement); if (done) done(); };
+    const fin = () => { on = false; cancelAnimationFrame(raf); doll = null; top = false; cam.fov = 70; dollLights(false); scene.background = bgSave; r.domElement.style.opacity = ""; tgt.x = tgt.z = 0; host.appendChild(r.domElement); if (done) done(); };
     if (!doll){ if (done) done(); return; }
     if (dtl) dtl.kill(); if (!window.gsap){ fin(); return; }
     const wg = world.userData.walls;
@@ -1943,7 +1967,7 @@ const TOUR = window.TOUR = (() => {
     if (done) dtl.add(done, .8);
   }
   function dollUnfocus(){ if (dtl) dtl.kill(); if (!window.gsap){ tgt.x = tgt.z = 0; return; }
-    dtl = gsap.timeline().to(tgt,{x:0, z:0, duration:1.2, ease:"power3.inOut"},0).to(topView,{dist:dollFit(), pol:.92, duration:1.2, ease:"power3.inOut"},0); }
+    dtl = gsap.timeline().to(tgt,{x:0, z:0, duration:1.2, ease:"power3.inOut"},0).to(topView,{dist:dollFit(), pol:.9, duration:1.2, ease:"power3.inOut"},0); }
   function open(k, label){
     if (!window.THREE || !TOUR_DATA[k]) return false;
     el.hidden = false; document.documentElement.classList.add("tour-open");
@@ -1964,7 +1988,7 @@ const TOUR = window.TOUR = (() => {
   }
   document.getElementById("tourClose").onclick = close;
   viewBtn.onclick = () => setTop(!top);
-  return {open, close, dollOpen, dollClose, dollRooms, dollProject, dollFocus, dollUnfocus, has:k => !!TOUR_DATA[k], _dbg:() => { const rc = new THREE.Raycaster(cam.position.clone(), new THREE.Vector3(-Math.sin(look.yaw),0,-Math.cos(look.yaw))); const h = rc.intersectObjects(world.children,true)[0]; let d=0; while (d<12 && !occ(pos.x-Math.sin(look.yaw)*d, pos.z-Math.cos(look.yaw)*d)) d+=.1; return {pos:[pos.x,pos.z], yaw:look.yaw, rayHit:h&&h.distance, occD:d}; }};
+  return {open, close, prewarm, dollOpen, dollClose, dollRooms, dollProject, dollFocus, dollUnfocus, has:k => !!TOUR_DATA[k], _dbg:() => { const rc = new THREE.Raycaster(cam.position.clone(), new THREE.Vector3(-Math.sin(look.yaw),0,-Math.cos(look.yaw))); const h = rc.intersectObjects(world.children,true)[0]; let d=0; while (d<12 && !occ(pos.x-Math.sin(look.yaw)*d, pos.z-Math.cos(look.yaw)*d)) d+=.1; return {pos:[pos.x,pos.z], yaw:look.yaw, rayHit:h&&h.distance, occD:d}; }};
 })();
 
 /* ---------- hero ---------- */
@@ -2023,6 +2047,8 @@ document.getElementById("hpCity").addEventListener("load", placeCity);
   });
   svg.addEventListener("pointerleave", () => { cur && cur.classList.remove("on"); cur = null; tip.hidden = true; });
   const zoomEl = document.getElementById("hpZoom");
+  const warm = () => { try { TOUR.prewarm(["A02","A01","B01","B02"]); } catch(e){} };
+  setTimeout(warm, 4500); svg.addEventListener("pointerenter", warm, {once:true});
   svg.addEventListener("click", e => {
     const g = e.target.closest(".hp-fl"); if (!g) return;
     const t = g.dataset.t, k = +g.dataset.k, rb = g.querySelector(".hp-u").getBoundingClientRect(), tipo = LADO[t][e.clientX < rb.left + rb.width/2 ? 0 : 1];

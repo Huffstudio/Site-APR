@@ -368,6 +368,10 @@ html.tour-open,html.tour-open body{overflow:hidden}
 .u-edge.l{right:100%;top:0;width:22px;height:100%;transform-origin:right;transform:rotateY(-90deg);background:linear-gradient(270deg,#d9d0c3,#a99d8c)}
 .u-shadow{position:absolute;inset:4%;background:rgba(0,0,0,.55);filter:blur(40px);transform:translateZ(-70px)}
 #uHs{position:absolute;inset:0;transform-style:preserve-3d}
+.u-dots{position:absolute;inset:0;z-index:2;pointer-events:none}
+.u-dots .u-hs{transform:none;pointer-events:auto;transition:opacity .3s}
+.unit.is3d .u-plane{display:none}
+.unit .p3d{z-index:1}
 .u-hs{position:absolute;width:0;height:0;transform-style:preserve-3d}
 .u-hs button{position:absolute;left:-21px;top:-21px;width:42px;height:42px;border-radius:50%;border:0;padding:0;background:transparent;cursor:pointer}
 .u-hs button::before{content:"";position:absolute;inset:11px;border-radius:50%;background:#B8873B;box-shadow:0 0 0 4px rgba(255,255,255,.85),0 4px 14px rgba(0,0,0,.4)}
@@ -876,7 +880,7 @@ html.tour-open,html.tour-open body{overflow:hidden}
 <a class="wfab" href="#reservar" aria-label="Reservar pelo WhatsApp"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.6.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.3-.4.8-1.4.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.8 11.9 11.9 0 0 0 4.6 4c1.7.7 2.4.8 3.2.7a2.8 2.8 0 0 0 1.8-1.3 2.3 2.3 0 0 0 .2-1.3c-.1-.1-.2-.2-.4-.3Z"/></svg><span>Reservar</span></a>
 
 <div class="unit" id="unit" role="dialog" aria-modal="true" aria-label="Apartamento">
-  <div class="u-view" id="uView"><div class="u-plane" id="uPlane"><div class="u-shadow"></div><i class="u-edge t"></i><i class="u-edge b"></i><i class="u-edge l"></i><i class="u-edge r"></i><img id="uImg" alt=""><div id="uHs"></div></div></div>
+  <div class="u-view" id="uView"><div class="u-dots" id="uDots"></div><div class="u-plane" id="uPlane"><div class="u-shadow"></div><i class="u-edge t"></i><i class="u-edge b"></i><i class="u-edge l"></i><i class="u-edge r"></i><img id="uImg" alt=""><div id="uHs"></div></div></div>
   <button class="u-x" id="uX" type="button"><span aria-hidden="true">←</span> Voltar ao prédio</button>
   <p class="u-hint" id="uHint">Toque num ponto dourado para entrar no ambiente</p>
   <aside class="u-panel">
@@ -2123,9 +2127,32 @@ const UNIT = (() => {
     hsBox.querySelectorAll(".u-hs").forEach(h => h.querySelector("button").onclick = () => dive(+h.dataset.i));
   }
   function load(cb){ img.onload = () => { size(); cb(); }; img.src = u.tipo === "U" ? IMGS.U : IMGS[u.torre][u.tipo]; if (img.complete && img.naturalWidth){ img.onload = null; size(); cb(); } }
+  const dotsBox = document.getElementById("uDots"); let use3d = false;
+  function dots(){
+    const rs = IMM.rooms(key());
+    dotsBox.innerHTML = rs.map(r => `<div class="u-hs" data-i="${r.i}"><button type="button" aria-label="${r.label}"></button><span class="u-tag">${r.label}</span></div>`).join("");
+    dotsBox.querySelectorAll(".u-hs").forEach(h => h.querySelector("button").onclick = () => dive(+h.dataset.i));
+  }
+  function place(){
+    const k = key(); dotsBox.querySelectorAll(".u-hs").forEach(h => { const b = ROOMS[k][+h.dataset.i]; const q = P3.project((b[1]+b[3])/2, (b[2]+b[4])/2);
+      if (!q){ h.style.opacity = 0; return; } h.style.left = q[0]+"px"; h.style.top = q[1]+"px"; }); }
   function show(t, andar, tipo){
     if (open) return; open = true; busy = true; u = {torre:t, andar, tipo}; dived = null;
     el.classList.add("on"); document.documentElement.style.overflow = "hidden"; if (lenis) lenis.stop();
+    use3d = !!(window.THREE && P3.ok());
+    if (use3d){
+      fill(); dots(); el.classList.add("is3d");
+      if (!P3.attach(view, key(), place)){ use3d = false; el.classList.remove("is3d"); }
+    }
+    if (use3d){
+      if (G && !still){
+        G.fromTo(el,{opacity:0},{opacity:1, duration:.55, ease:"power1.out"});
+        G.fromTo(".u-panel",{x:60, opacity:0},{x:0, opacity:1, duration:.9, delay:.6, ease:"power3.out"});
+        G.fromTo(dotsBox,{opacity:0},{opacity:1, duration:.6, delay:2.2, onComplete:() => busy = false});
+      } else busy = false;
+      return;
+    }
+    el.classList.remove("is3d");
     load(() => {
       fill(); O = [pw/2, ph/2];
       if (!G || still){ st = {...ISO, tx:0, ty:0, tz:0}; apply(); busy = false; return; }
@@ -2137,6 +2164,7 @@ const UNIT = (() => {
     });
   }
   function swap(){
+    if (use3d){ fill(); dots(); P3.setPlan(key()); G && G.fromTo(dotsBox,{opacity:0},{opacity:1, duration:.5, delay:.9}); return; }
     busy = true; const out = () => load(() => { fill(); O = [pw/2, ph/2]; st = {...ISO, tx:0, ty:0, tz:0}; apply();
       G ? G.fromTo(plane,{opacity:0, y:30},{opacity:1, y:0, duration:.6, ease:"power2.out", onComplete:() => busy = false}) : busy = false; });
     G ? G.to(plane,{opacity:0, y:-20, duration:.35, onComplete:out}) : out();
@@ -2144,6 +2172,11 @@ const UNIT = (() => {
   // entrar no cômodo: a maquete aproxima e endireita sobre ele, e a foto toma a tela
   function dive(i){
     if (busy) return; const r = (ROOMS[key()]||[])[i]; if (!r) return; busy = true; dived = i;
+    if (use3d){
+      dotsBox.querySelectorAll(".u-hs").forEach(h => h.classList.toggle("on", +h.dataset.i === i));
+      G && G.to([dotsBox,"#uHint"],{opacity:0, duration:.4, delay:.3});
+      P3.focus(r.slice(1), () => IMM.open(key(), i)); setTimeout(() => busy = false, 1400); return;
+    }
     const [x0,y0,x1,y1] = r.slice(1), o1 = [(x0+x1)/200*pw, (y0+y1)/200*ph], bw = (x1-x0)/100*pw, bh = (y1-y0)/100*ph;
     const sh = originShift(o1, st); O = o1; st.tx += sh[0]; st.ty += sh[1]; st.tz += sh[2]; apply();
     hsBox.querySelectorAll(".u-hs").forEach(h => h.classList.toggle("on", +h.dataset.i === i));
@@ -2157,6 +2190,7 @@ const UNIT = (() => {
   // ao sair das fotos, a câmera volta para a maquete inteira
   IMM.onClose = () => {
     if (!open || dived == null) return; dived = null;
+    if (use3d){ P3.unfocus(); G && G.to([dotsBox,"#uHint"],{opacity:1, duration:.5, delay:1}); dotsBox.querySelectorAll(".u-hs").forEach(h => h.classList.remove("on")); return; }
     if (!G || still){ O = [pw/2, ph/2]; st = {...ISO, tx:0, ty:0, tz:0}; apply(); return; }
     const sh = originShift(O, ISO); busy = true;
     G.to(st,{ax:ISO.ax, az:ISO.az, s:1, tx:sh[0], ty:sh[1], tz:sh[2], duration:1.2, ease:"power3.inOut", onUpdate:apply, onComplete:() => { O = [pw/2, ph/2]; st = {...ISO, tx:0, ty:0, tz:0}; apply(); busy = false; hsBox.querySelectorAll(".u-hs").forEach(h => h.classList.remove("on")); }});
@@ -2166,6 +2200,8 @@ const UNIT = (() => {
     if (!open || busy) return; busy = true;
     const end = () => { el.classList.remove("on"); open = false; busy = false; document.documentElement.style.overflow = ""; if (lenis) lenis.start(); if (after) after(); };
     if (window.grHeroBack) window.grHeroBack();
+    if (use3d){ G && G.to([".u-panel",dotsBox],{opacity:0, duration:.4});
+      P3.detach(() => { if (G) G.to(el,{opacity:0, duration:.5, onComplete:() => { end(); if (pmode === "3d") pApply(); }}); else end(); }); return; }
     if (!G || still){ end(); return; }
     G.to(st,{ax:89, az:0, s:.62, duration:.9, ease:"power3.in", onUpdate:apply});
     G.to(el,{opacity:0, duration:.6, delay:.4, onComplete:end});
@@ -2176,7 +2212,7 @@ const UNIT = (() => {
     const rt = document.getElementById("rTorre"), rp = document.getElementById("rTipo"); if (rt) rt.value = "Torre " + t; if (rp) rp.value = tp;
     const f = document.getElementById("rform"); if (lenis) lenis.scrollTo(f,{offset:-120,duration:1.2}); else f.scrollIntoView({behavior:"smooth"}); }); };
   addEventListener("keydown", e => { if (open && e.key === "Escape" && !document.getElementById("imm").classList.contains("on")) close(); });
-  addEventListener("resize", () => { if (open && img.naturalWidth){ size(); if (dived == null){ O = [pw/2, ph/2]; apply(); } } });
+  addEventListener("resize", () => { if (open && !use3d && img.naturalWidth){ size(); if (dived == null){ O = [pw/2, ph/2]; apply(); } } });
   return {show, isOpen:() => open};
 })();
 const roomsEl = document.getElementById("rooms");
@@ -2214,7 +2250,7 @@ const P3 = (() => {
   const host = document.getElementById("p3d");
   let ok = !!window.THREE, r, scene, cam, floor, wallsG, tex, key = null, built = null, on = false, entering = false, tl = null, dims = {W:10,H:10};
   const anim = !!window.gsap && !matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const view = {az:-.6, pol:.95, dist:16};
+  const view = {az:-.6, pol:.95, dist:16}, tgt = {x:0, z:0}; let looping = false, frameCb = null, home = null;
   function init(){
     try { r = new THREE.WebGLRenderer({antialias:true, alpha:true}); } catch(e){ ok = false; return; }
     r.setPixelRatio(Math.min(devicePixelRatio,2)); r.outputEncoding = THREE.sRGBEncoding;
@@ -2302,14 +2338,40 @@ const P3 = (() => {
       .to({},{duration:.55});
   }
   function loop(t){
-    if (!on) return; requestAnimationFrame(loop);
+    if (!on){ looping = false; return; } looping = true; requestAnimationFrame(loop);
     const s = Math.sin(view.pol);
-    cam.position.set(Math.sin(view.az)*s*view.dist, Math.cos(view.pol)*view.dist, Math.cos(view.az)*s*view.dist);
-    cam.lookAt(0, 0, 0); r.render(scene, cam);
+    cam.position.set(tgt.x + Math.sin(view.az)*s*view.dist, Math.cos(view.pol)*view.dist, tgt.z + Math.cos(view.az)*s*view.dist);
+    cam.lookAt(tgt.x, 0, tgt.z); r.render(scene, cam);
+    if (frameCb) frameCb();
   }
+  const world = (px, py) => [(px/100-.5)*dims.W, (py/100-.5)*dims.H];
   return {
     ok: () => ok,
     setPlan(k){ key = k; if (on && r) build(); },
+    // abre o 3D dentro de outro lugar (a tela da unidade), já com a animação de entrada
+    attach(parent, k, cb){
+      if (!ok) return false; if (!home) home = {p:host.parentNode, n:host.nextSibling};
+      if (tl) tl.kill(); parent.appendChild(host); host.hidden = false; host.classList.remove("vis");
+      if (!r) init(); if (!ok) return false;
+      on = true; size(); if (!looping) requestAnimationFrame(loop);
+      tgt.x = tgt.z = 0; frameCb = cb || null; key = k; entering = true; build(); return true;
+    },
+    detach(done){
+      frameCb = null;
+      const fin = () => { on = false; host.hidden = true; host.classList.remove("vis"); tgt.x = tgt.z = 0; if (home) home.p.insertBefore(host, home.n); if (done) done(); };
+      if (!on){ fin(); return; } outro(() => {}, fin);
+    },
+    project(px, py){ if (!cam || !built) return null; const [x,z] = world(px,py), v = new THREE.Vector3(x,.06,z).project(cam);
+      return [(v.x+1)/2*host.clientWidth, (1-v.y)/2*host.clientHeight, v.z]; },
+    // aproxima a câmera de um cômodo (caixa em % da planta)
+    focus(b, done){
+      const [x,z] = world((b[0]+b[2])/2, (b[1]+b[3])/2), span = Math.max((b[2]-b[0])/100*dims.W, (b[3]-b[1])/100*dims.H);
+      if (tl) tl.kill(); if (!anim){ if (done) done(); return; }
+      tl = gsap.timeline().to(tgt,{x, z, duration:1.3, ease:"power3.inOut"},0).to(view,{dist:Math.max(2.2, span*2.1), pol:.62, duration:1.3, ease:"power3.inOut"},0);
+      if (done) tl.add(done, .8);
+    },
+    unfocus(){ if (tl) tl.kill(); if (!anim){ tgt.x = tgt.z = 0; return; }
+      tl = gsap.timeline().to(tgt,{x:0, z:0, duration:1.2, ease:"power3.inOut"},0).to(view,{dist:orbitDist(), pol:.95, duration:1.2, ease:"power3.inOut"},0); },
     show(v, done){
       if (!ok){ if (done) done(); return; }
       if (v){

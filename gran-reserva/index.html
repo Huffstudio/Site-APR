@@ -1759,6 +1759,7 @@ const TOUR = window.TOUR = (() => {
   function init(){
     r = new THREE.WebGLRenderer({antialias:true, alpha:true}); r.setPixelRatio(Math.min(devicePixelRatio, 1.6));
     r.outputEncoding = THREE.sRGBEncoding; r.toneMapping = THREE.ACESFilmicToneMapping; r.toneMappingExposure = .92;
+    r.shadowMap.enabled = true; r.shadowMap.type = THREE.PCFSoftShadowMap;
     host.appendChild(r.domElement);
     scene = new THREE.Scene();
     const sc = document.createElement("canvas"); sc.width = 4; sc.height = 256; const sg = sc.getContext("2d"), lg = sg.createLinearGradient(0,0,0,256);
@@ -1842,6 +1843,11 @@ const TOUR = window.TOUR = (() => {
     const swap = !!(doll && on); doll = {frame, tap}; parent.appendChild(r.domElement);
     build(k); top = true; ceil.visible = false; bgSave = bgSave || scene.background; scene.background = null; r.setClearColor(0x000000, 0);
     cam.fov = 30; size(); tgt.x = tgt.z = 0;
+    // luz de maquete: sol baixo e quente com sombra macia, para os móveis ganharem volume
+    r.toneMappingExposure = 1.08; key.castShadow = true; key.intensity = .95; key.position.set(-9, 16, 7);
+    key.shadow.mapSize.set(2048, 2048); key.shadow.radius = 4; key.shadow.bias = -.0006; key.shadow.normalBias = .02;
+    Object.assign(key.shadow.camera, {left:-13, right:13, top:13, bottom:-13, near:1, far:45}); key.shadow.camera.updateProjectionMatrix();
+    world.traverse(o => { if (o.isMesh){ const gl = o.material && o.material.transparent; o.castShadow = !gl; o.receiveShadow = true; } });
     const wg = world.userData.walls, anim = window.gsap && !matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (!on){ on = true; lastT = 0; cancelAnimationFrame(raf); raf = requestAnimationFrame(loop); }
     if (dtl) dtl.kill();
@@ -1855,7 +1861,7 @@ const TOUR = window.TOUR = (() => {
     return true;
   }
   function dollClose(done){
-    const fin = () => { on = false; cancelAnimationFrame(raf); doll = null; top = false; cam.fov = 70; scene.background = bgSave; r.domElement.style.opacity = ""; tgt.x = tgt.z = 0; host.appendChild(r.domElement); if (done) done(); };
+    const fin = () => { on = false; cancelAnimationFrame(raf); doll = null; top = false; cam.fov = 70; key.castShadow = false; key.intensity = .6; key.position.set(-8,12,6); r.toneMappingExposure = .92; scene.background = bgSave; r.domElement.style.opacity = ""; tgt.x = tgt.z = 0; host.appendChild(r.domElement); if (done) done(); };
     if (!doll){ if (done) done(); return; }
     if (dtl) dtl.kill(); if (!window.gsap){ fin(); return; }
     const wg = world.userData.walls;

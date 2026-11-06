@@ -373,6 +373,8 @@ html.tour-open,html.tour-open body{overflow:hidden}
 .u-dots .u-hs{transform:none;pointer-events:auto;transition:opacity .3s}
 .unit.is3d .u-plane{display:none}
 .unit .p3d{z-index:1}
+.pstage.doll .rooms,.pstage.doll .pmodel{visibility:hidden}
+.pstage.doll .p3d{cursor:grab}
 .u-hs{position:absolute;width:0;height:0;transform-style:preserve-3d}
 .u-hs button{position:absolute;left:-21px;top:-21px;width:42px;height:42px;border-radius:50%;border:0;padding:0;background:transparent;cursor:pointer}
 .u-hs button::before{content:"";position:absolute;inset:11px;border-radius:50%;background:#B8873B;box-shadow:0 0 0 4px rgba(255,255,255,.85),0 4px 14px rgba(0,0,0,.4)}
@@ -2092,12 +2094,13 @@ document.getElementById("hpCity").addEventListener("load", placeCity);
     const g = e.target.closest(".hp-fl"); if (!g) return;
     const t = g.dataset.t, k = +g.dataset.k, rb = g.querySelector(".hp-u").getBoundingClientRect(), tipo = LADO[t][e.clientX < rb.left + rb.width/2 ? 0 : 1];
     tip.hidden = true; g.classList.add("on");
-    if (!window.gsap || matchMedia("(prefers-reduced-motion: reduce)").matches){ UNIT.show(t, k, tipo); return; }
+    const goIn = () => { window.grSelect && window.grSelect(t, tipo, false); window.grFromHero = true; IMM.open(t + tipo, null); };
+    if (!window.gsap || matchMedia("(prefers-reduced-motion: reduce)").matches){ goIn(); return; }
     gsap.set(zoomEl,{scale:1}); const zb = zoomEl.getBoundingClientRect();
     zoomEl.style.transformOrigin = `${rb.left - zb.left + rb.width/2}px ${rb.top - zb.top + rb.height/2}px`;
     gsap.to(zoomEl,{scale:3.4, duration:1.1, ease:"power3.in"});
     gsap.to([".hero-copy",".mirror","#dragHint"],{autoAlpha:0, duration:.4});
-    gsap.delayedCall(.7, () => UNIT.show(t, k, tipo));
+    gsap.delayedCall(.75, goIn);
     window.grHeroBack = () => { gsap.to(zoomEl,{scale:1, duration:1.4, delay:.3, ease:"power3.out"}); gsap.to([".hero-copy",".mirror","#dragHint"],{autoAlpha:1, duration:.6, delay:.9}); g.classList.remove("on"); };
   });
 })();
@@ -2180,8 +2183,26 @@ let pmode = "2d";
 function pApply(){
   if (!zoomRoom) pmodel.style.transform = "none";
   pstage.querySelectorAll(".pmodes button").forEach(b => b.setAttribute("aria-pressed", b.dataset.m===pmode));
+  const k = selTorre + selTipo, p3d = document.getElementById("p3d");
+  if (pmode==="3d" && window.THREE && TOUR.has(k)){
+    pstage.classList.add("is3d", "doll"); p3d.hidden = false; p3d.style.opacity = 1; dollPlan = k;
+    TOUR.dollOpen(p3d, k, null, rm => IMM.open(k, roomFor(k, rm.n, rm.a)));
+    return;
+  }
+  if (dollPlan){ dollPlan = null; TOUR.dollClose(() => { p3d.hidden = true; p3d.style.opacity = ""; pstage.classList.remove("is3d", "doll"); }); if (pmode !== "3d") return; }
   if (pmode==="3d"){ pstage.classList.add("is3d"); P3.show(true); }
   else P3.show(false, () => pstage.classList.remove("is3d"));
+}
+var dollPlan = null;
+// cômodo tocado na maquete -> cômodo das fotos
+function roomFor(k, n, a){
+  const R = ROOMS[k] || [], idx = name => R.findIndex(r => r[0] === name);
+  if (n === "Living" || (n === "Cozinha" && a > 40)) return idx("Living");
+  if (n === "Cozinha") return idx("Cozinha gourmet");
+  if (n === "Adega") return idx("Lavabo e adega");
+  if (/^Suíte/.test(n)) return a > 22 ? idx("Suíte master") : idx("Suíte");
+  if (/^Banheiro/.test(n)) return idx("Banho");
+  return -1;
 }
 pstage.querySelectorAll(".pmodes button").forEach(b => b.onclick = () => {
   if (b.dataset.m === "fotos"){ IMM.open(IMM.key(), null); return; }
@@ -2268,7 +2289,7 @@ let IMM; IMM = (() => {
     show(r, 0, false); document.getElementById("immX").focus({preventScroll:true});
   }
   function close(){
-    const end = () => { el.classList.remove("on"); stage.innerHTML = ""; cur = null; busy = false; document.documentElement.style.overflow = ""; if (lenis && !UNIT.isOpen()) lenis.start(); if (typeof pZoom === "function") pZoom(null); if (api.onClose) api.onClose(); };
+    const end = () => { el.classList.remove("on"); stage.innerHTML = ""; cur = null; busy = false; document.documentElement.style.overflow = ""; if (lenis && !UNIT.isOpen()) lenis.start(); if (typeof pZoom === "function") pZoom(null); if (api.onClose) api.onClose(); if (window.grFromHero){ window.grFromHero = false; if (window.grHeroBack) window.grHeroBack(); } };
     if (G) G.to(el,{opacity:0, duration:.45, onComplete:end}); else end();
   }
   document.getElementById("immX").onclick = close;
@@ -2441,7 +2462,7 @@ let zoomRoom = null;
 // nome e metragem no espaço branco da planta, onde vinham impressos na imagem
 const PLABELS = {A02:{x:9.28,y:11.26,fs:3.43,t:"Apto Tipo 02",s:"219,75 m² · 4 suítes"}, A01:{x:70.48,y:11.26,fs:3.51,t:"Apto Tipo 01",s:"201 m² · 3 suítes"}, B02:{x:6.9,y:78.69,fs:3.36,t:"Apto Tipo 02",s:"219,75 m² · 4 suítes"}, B01:{x:68.49,y:78.69,fs:3.40,t:"Apto Tipo 01",s:"201 m² · 3 suítes"}, U:{x:79.57,y:75.19,fs:1.78,t:"420,75 m² · 5 suítes",s:"6 vagas de garagem"}};
 function pRooms(key){
-  zoomRoom = null; pZoom(null); P3.setPlan(key);
+  zoomRoom = null; pZoom(null); P3.setPlan(key); if (typeof dollPlan !== "undefined" && dollPlan && dollPlan !== key) pApply();
   roomsEl.innerHTML = (ROOMS[key]||[]).map(([n,x0,y0,x1,y1],i) =>
     `<button class="room-hs" data-i="${i}" style="left:${x0}%;top:${y0}%;width:${x1-x0}%;height:${y1-y0}%" aria-label="${n}"><span>${n}</span></button>`).join("")
     + (PLABELS[key] ? `<div class="plabel" aria-hidden="true" style="left:${PLABELS[key].x}%;top:${PLABELS[key].y}%;--fs:${PLABELS[key].fs}cqw"><b>${PLABELS[key].t}</b><span>${PLABELS[key].s}</span></div>` : "");

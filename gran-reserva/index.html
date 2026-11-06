@@ -643,6 +643,14 @@ html.tour-open,html.tour-open body{overflow:hidden}
 /* reveals (só quando o JS de motion está ativo) */
 .js-motion [data-reveal]{opacity:0;transform:translateY(28px)}
 .js-motion [data-clip]{clip-path:inset(12% 0 12% 0)}
+
+/* ===== luz que segue o mouse (fotos, cards de planta, distâncias, formulário e painel da unidade) ===== */
+.luz{position:relative;isolation:isolate}
+.luz::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:3;opacity:0;transition:opacity .35s;
+  background:radial-gradient(var(--lr,260px) circle at var(--lx,50%) var(--ly,50%),rgba(240,205,150,.16),rgba(240,205,150,.05) 40%,transparent 70%);mix-blend-mode:screen}
+.luz:hover::after{opacity:1}
+.hcard.luz::after,.shot.luz::after,.media.luz::after{--lr:380px}
+@media (hover:none),(prefers-reduced-motion:reduce){.luz::after{display:none}}
 </style>
 </head>
 <body>
@@ -2608,6 +2616,18 @@ document.getElementById("rform").addEventListener("submit", e => {
   const a = document.createElement("a"); a.href = url; a.target = "_blank"; a.rel = "noopener"; document.body.appendChild(a); a.click(); a.remove();
   document.getElementById("rFine").textContent = "Abrindo o WhatsApp com a sua mensagem. Se não abrir, a mensagem é: " + txt;
 });
+})();
+
+/* luz que segue o mouse: o JS só grava a posição; o brilho é o gradiente do CSS */
+(() => {
+  if (!matchMedia("(hover:hover)").matches) return;
+  const SEL = ".hcard, .shot, .media, .type, .dist li, .rform, .u-panel, .specs2 div";
+  const mark = () => document.querySelectorAll(SEL).forEach(el => el.classList.add("luz"));
+  mark(); setTimeout(mark, 1500); setTimeout(mark, 5000);
+  let raf = 0, ev = null;
+  document.addEventListener("pointermove", e => { ev = e; if (raf) return; raf = requestAnimationFrame(() => { raf = 0;
+    const el = ev.target.closest && ev.target.closest(".luz"); if (!el) return;
+    const r = el.getBoundingClientRect(); el.style.setProperty("--lx", (ev.clientX - r.left) + "px"); el.style.setProperty("--ly", (ev.clientY - r.top) + "px"); }); }, {passive:true});
 })();
 </script>
 

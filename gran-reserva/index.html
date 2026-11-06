@@ -620,7 +620,7 @@ html.tour-open,html.tour-open body{overflow:hidden}
 /* 05 ambientes, galeria horizontal */
 .amb2{padding-block:96px 72px;border-top:1px solid var(--line);overflow:hidden}
 .hwrap{position:relative}
-.htrack{display:flex;gap:16px;padding-left:max(16px,calc((100vw - 1200px)/2 + 16px));padding-right:max(16px,env(safe-area-inset-right,0px));overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.htrack{display:flex;gap:16px;padding-left:max(16px,calc((100vw - 1200px)/2 + 16px));scroll-padding-left:max(16px,calc((100vw - 1200px)/2 + 16px));padding-right:max(16px,env(safe-area-inset-right,0px));overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch}
 .htrack::-webkit-scrollbar{display:none}
 .hcard{flex:0 0 auto;width:min(78vw,560px);aspect-ratio:4/5;scroll-snap-align:start;position:relative;margin:0;border-radius:4px;overflow:hidden;background:var(--panel);border:1px solid var(--line)}
 .hcard.land{width:min(88vw,860px);aspect-ratio:16/10}
@@ -632,6 +632,9 @@ html.tour-open,html.tour-open body{overflow:hidden}
 .hcard figcaption span{font-size:12px;color:rgba(255,236,226,.72)}
 .hcard figcaption em{font-style:normal;font-family:var(--display);font-size:14px;color:var(--gold)}
 .hcount{display:flex;align-items:center;gap:14px;margin-top:24px;font-size:13px;color:var(--muted)}
+.hnav{flex:none;width:42px;height:42px;border-radius:50%;border:1px solid rgba(242,195,166,.35);background:rgba(18,10,12,.4);color:#F6ECE8;font-size:20px;line-height:1;display:grid;place-items:center;cursor:pointer;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);transition:background .3s,border-color .3s}
+.hnav:hover{background:rgba(197,88,58,.35);border-color:rgba(242,195,166,.7)}
+.hnav:disabled{opacity:.35;cursor:default}
 .hcount .hbar{flex:1;max-width:280px;height:1px;background:var(--line);overflow:hidden}
 .hcount .hbar i{display:block;height:100%;background:var(--gold);transform-origin:0 50%;transform:scaleX(.15)}
 .pinned .htrack{overflow:visible;scroll-snap-type:none}
@@ -889,7 +892,7 @@ body{margin:0;background:transparent;letter-spacing:-.005em}
   <div class="hwrap" id="hwrap">
     <div class="htrack" id="htrack"></div>
   </div>
-  <div class="wrap"><div class="hcount"><span id="hIdx">01</span><div class="hbar"><i id="hBar"></i></div><span id="hTot">07</span></div></div>
+  <div class="wrap"><div class="hcount"><button type="button" class="hnav" id="hPrev" aria-label="Foto anterior">‹</button><span id="hIdx">01</span><div class="hbar"><i id="hBar"></i></div><span id="hTot">07</span><button type="button" class="hnav" id="hNext" aria-label="Próxima foto">›</button></div></div>
 </section>
 
 <section class="leisure" id="lazer">
@@ -1432,6 +1435,16 @@ function setupMotion(){
   const cards=[...tr.children];
   const setIdx=p=>{ const i=Math.min(cards.length-1,Math.round(p*(cards.length-1))); hIdx.textContent=String(i+1).padStart(2,"0"); if(hBar) hBar.style.transform=`scaleX(${.12+.88*p})`; };
   tr.addEventListener("scroll",()=>{ const m=tr.scrollWidth-tr.clientWidth; setIdx(m>0?tr.scrollLeft/m:0); },{passive:true});
+  // setas: no computador andam pela rolagem presa; no celular deslizam a faixa
+  const curIdx=()=>+hIdx.textContent-1;
+  const goCard=d=>{ const n=cards.length, i=Math.max(0,Math.min(n-1,curIdx()+d)), st=window.grHST;
+    if(st){ const y=st.start+(st.end-st.start)*(i/(n-1)); if(lenis) lenis.scrollTo(y,{duration:1}); else scrollTo({top:y,behavior:"smooth"}); }
+    else { const c=cards[i], pl=parseFloat(getComputedStyle(tr).paddingLeft)||0; tr.scrollTo({left:tr.scrollLeft+(c.getBoundingClientRect().left-tr.getBoundingClientRect().left)-pl,behavior:"smooth"}); } };
+  document.getElementById("hPrev").onclick=()=>goCard(-1); document.getElementById("hNext").onclick=()=>goCard(1);
+  // arrastar com o mouse quando a faixa não está presa
+  let dg=null; tr.addEventListener("pointerdown",e=>{ if(e.pointerType!=="mouse"||window.grHST) return; dg={x:e.clientX,l:tr.scrollLeft}; tr.style.scrollSnapType="none"; });
+  addEventListener("pointermove",e=>{ if(dg) tr.scrollLeft=dg.l-(e.clientX-dg.x); });
+  addEventListener("pointerup",()=>{ if(!dg) return; dg=null; tr.style.scrollSnapType=""; });
   // rail e barra de progresso
   const rail=document.getElementById("rail"), links=[...rail.querySelectorAll("a")], prog=document.getElementById("progress");
   const ids=links.map(a=>a.getAttribute("href").slice(1));
@@ -1520,8 +1533,9 @@ function setupMotion(){
     const sec=document.getElementById("ambientes"); sec.classList.add("pinned");
     const dist=()=>Math.max(0,tr.scrollWidth-innerWidth+ (innerWidth>1232?(innerWidth-1200)/2:16));
     const tw=G.to(tr,{x:()=>-dist(),ease:"none",scrollTrigger:{trigger:sec,start:"top top",end:()=>"+="+dist(),pin:true,scrub:.6,invalidateOnRefresh:true,anticipatePin:1,onUpdate:self=>setIdx(self.progress)}});
+    window.grHST=tw.scrollTrigger;
     cards.forEach(c=>{ const im=c.querySelector("img"); if(im) G.fromTo(im,{xPercent:6},{xPercent:-6,ease:"none",scrollTrigger:{trigger:c,containerAnimation:tw,start:"left right",end:"right left",scrub:true}}); });
-    return ()=>sec.classList.remove("pinned");
+    return ()=>{ sec.classList.remove("pinned"); window.grHST=null; };
   });
   addEventListener("load",()=>ST.refresh());
 }

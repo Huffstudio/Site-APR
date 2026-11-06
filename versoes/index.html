@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Versões do site</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#1a0b0e;--card:#2a1418;--line:#4a252a;--fg:#f3e6e1;--mut:#c9a9a2;--ac:#d9744f}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.55 Inter,system-ui,sans-serif;padding:40px max(16px,env(safe-area-inset-right)) 60px max(16px,env(safe-area-inset-left))}
+main{max-width:860px;margin:auto}h1{font:400 clamp(38px,7vw,60px)/1.05 "Instrument Serif",Georgia,serif;margin:0 0 10px}
+p.lead{color:var(--mut);margin:0 0 34px;max-width:60ch}h2{font:400 30px "Instrument Serif",Georgia,serif;margin:44px 0 14px}
+.g{display:grid;gap:14px}a.v{display:grid;grid-template-columns:auto 1fr;gap:6px 18px;padding:18px 20px;background:var(--card);border:1px solid var(--line);border-radius:18px;color:inherit;text-decoration:none;transition:border-color .2s,transform .2s}
+a.v:hover{border-color:var(--ac);transform:translateY(-2px)}a.v b{font:400 34px/1 "Instrument Serif",serif;color:var(--ac);grid-row:span 2;min-width:1.4em}
+a.v strong{font-weight:500}a.v span{color:var(--mut);font-size:14.5px}a.v.now{border-color:var(--ac)}
+.tag{display:inline-block;font-size:12px;padding:2px 9px;border-radius:99px;background:var(--ac);color:#1a0b0e;margin-left:8px;vertical-align:2px}
+</style></head><body><main>
+<h1>Versões do site</h1>
+<p class="lead">Cada link abre o site do jeito que ele estava naquele momento. Abra no celular e no computador e me diga o número da que você quer. Os textos das versões antigas são os de antes (ainda com WhatsApp e links); vale só pra escolher o visual do fundo e da abertura.</p>
+
+<h2>Haacke (página inicial)</h2>
+<div class="g">
+<a class="v" href="1/"><b>1</b><strong>Primeira abertura</strong><span>Vídeo de fundo, título grande em degradê, botão branco com seta. O primeiro modelo que você mandou.</span></a>
+<a class="v" href="2/"><b>2</b><strong>Abertura em tela cheia, foto do Gran Reserva</strong><span>Segundo modelo, menu de vidro, foto do prédio no fundo, sem o vídeo líquido.</span></a>
+<a class="v" href="3/"><b>3</b><strong>Vídeo líquido tingido + foto</strong><span>O vídeo líquido em vinho e terracota, fixo até o fim da página, ainda com a foto do Gran Reserva por baixo.</span></a>
+<a class="v" href="4/"><b>4</b><strong>Vídeo líquido + arte abstrata, sem foto</strong><span>Sem foto do prédio, só a arte na cor da marca. Antes dos efeitos (cursor, palavras, linha do tempo).</span></a>
+<a class="v" href="5/"><b>5</b><strong>Versão leve no celular</strong><span>Igual à atual no computador, mas no celular com imagem parada no lugar do vídeo. A que você achou feia.</span></a>
+<a class="v now" href="../"><b>6</b><strong>Atual<span class="tag">no ar</span></strong><span>Vídeo líquido no celular e no computador, manchas rearrumadas pra tela em pé, todos os efeitos e o conteúdo novo.</span></a>
+</div>
+
+<h2>Gran Reserva</h2>
+<div class="g">
+<a class="v" href="gr-1/"><b>A</b><strong>Visual próprio, antes do padrão Haacke</strong><span>Fundo escuro original do Gran Reserva, antes de receber a arte líquida e o menu de vidro.</span></a>
+<a class="v now" href="../gran-reserva/"><b>B</b><strong>Atual<span class="tag">no ar</span></strong><span>Com a arte líquida, menu de vidro e as fontes da Haacke.</span></a>
+</div>
+</main></body></html>

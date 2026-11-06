@@ -74,6 +74,10 @@ h1,h2,h3{font-family:var(--display);font-weight:400;margin:0;text-wrap:balance;l
 @media (prefers-reduced-motion:reduce){.hero-img .liq{animation:none}}
 .hero-img video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;opacity:0;transition:opacity 1.2s;filter:hue-rotate(148deg) saturate(.85) brightness(.85)}
 .hero-img video.on{opacity:1}
+.silk{position:absolute;inset:0;width:100%;height:100%;display:block}
+.has-silk video,.has-silk .liq{display:none!important}
+.hero-img.has-silk::after{background:radial-gradient(75% 65% at 50% 45%,rgba(13,7,9,.05),rgba(13,7,9,.5))}
+
 .hero-img{filter:none}
 .hero-img::after{content:"";position:absolute;inset:0;background:radial-gradient(70% 60% at 50% 50%,rgba(13,7,9,.35),rgba(13,7,9,.7));transition:background-color .6s}
 .hero-img::before{content:"";position:absolute;inset:0;z-index:1;background:rgba(13,7,9,.55);opacity:var(--deep,0)}
@@ -412,8 +416,73 @@ html.fx-off .fxc,html.fx-off .fxr{opacity:0!important}
   };
   addEventListener("scroll", onScroll, {passive:true}); onScroll();
   // vídeo de fundo do modelo (stream HLS); a imagem parada fica por baixo caso ele não carregue
+/* fundo em seda líquida desenhado em tempo real (WebGL): nítido em qualquer tela, sem vídeo */
+window.grSilk = function(host){
+  if (!host) return false;
+  const c = document.createElement("canvas"); c.className = "silk";
+  const gl = c.getContext("webgl", {alpha:false, antialias:false, depth:false, powerPreference:"high-performance"});
+  if (!gl) return false;
+  const hp = (gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, gl.HIGH_FLOAT) || {}).precision > 0;
+  const VS = "attribute vec2 a;void main(){gl_Position=vec4(a,0.,1.);}";
+  const FS = (hp ? "precision highp float;" : "precision mediump float;") + `
+uniform vec2 R;uniform float T;
+float h(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+float field(vec2 p,float t){
+  for(int i=1;i<7;i++){float k=float(i);
+    p.x+=.45/k*sin(k*3.*p.y+t+.3*k)+.8; p.y+=.45/k*cos(k*2.4*p.x+t*.8+.3*k)-.8;}
+  return .5+.5*sin(p.x+p.y);}
+void main(){
+  vec2 uv=gl_FragCoord.xy/R;
+  vec2 p=(gl_FragCoord.xy-.5*R)/max(R.x,R.y)*1.6;
+  float t=T*.09;
+  float f=field(p,t),e=.0045;
+  float fx=field(p+vec2(e,0.),t)-f, fy=field(p+vec2(0.,e),t)-f;
+  vec3 N=normalize(vec3(-fx/e*.084,-fy/e*.084,1.)*vec3(1.,1.,1.)); N=normalize(vec3(clamp(N.xy,-.85,.85),N.z));
+  vec3 L=normalize(vec3(-.45,.6,.65));
+  float dif=max(dot(N,L),0.);
+  float spec=pow(max(dot(N,normalize(L+vec3(0.,0.,1.))),0.),30.);
+  vec3 c=mix(vec3(.06,.02,.03),vec3(.42,.09,.12),f);
+  c=mix(c,vec3(.78,.34,.22),smoothstep(.6,1.,f)*.6);
+  c*=.25+.9*dif;
+  c+=vec3(1.,.74,.6)*spec*.6;
+  c*=mix(.45,1.,smoothstep(1.,.15,length((uv-.5)*vec2(1.2,1.))));
+  c+=(h(gl_FragCoord.xy+fract(T)*97.)-.5)/200.;
+  gl_FragColor=vec4(c,1.);
+}`;
+  const sh = (t, s) => { const o = gl.createShader(t); gl.shaderSource(o, s); gl.compileShader(o); return gl.getShaderParameter(o, gl.COMPILE_STATUS) ? o : null; };
+  const vs = sh(gl.VERTEX_SHADER, VS), fs = sh(gl.FRAGMENT_SHADER, FS);
+  if (!vs || !fs) return false;
+  const pr = gl.createProgram(); gl.attachShader(pr, vs); gl.attachShader(pr, fs); gl.linkProgram(pr);
+  if (!gl.getProgramParameter(pr, gl.LINK_STATUS)) return false;
+  gl.useProgram(pr);
+  gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 3,-1, -1,3]), gl.STATIC_DRAW);
+  const loc = gl.getAttribLocation(pr, "a"); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+  const uR = gl.getUniformLocation(pr, "R"), uT = gl.getUniformLocation(pr, "T");
+  host.insertBefore(c, host.firstChild ? host.firstChild.nextSibling : null);
+  host.classList.add("has-silk");
+  const touch = matchMedia("(pointer:coarse)").matches;
+  const fit = () => {
+    // resolução interna: a seda é suave, então meia resolução + reescala fica limpa e leve
+    const k = Math.min(devicePixelRatio || 1, 2) * (touch ? .7 : 1);
+    const w = Math.max(2, Math.round(innerWidth * k)), hh = Math.max(2, Math.round(innerHeight * k));
+    if (c.width !== w || c.height !== hh){ c.width = w; c.height = hh; gl.viewport(0, 0, w, hh); gl.uniform2f(uR, w, hh); }
+  };
+  fit(); addEventListener("resize", fit);
+  const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const t0 = performance.now() - 40000; let last = 0;
+  const draw = now => {
+    if (!still) requestAnimationFrame(draw);
+    if (document.hidden || now - last < (touch ? 40 : 30)) return;
+    last = now; gl.uniform1f(uT, (now - t0) / 1000); gl.drawArrays(gl.TRIANGLES, 0, 3);
+  };
+  requestAnimationFrame(draw);
+  return true;
+};
+
+const SILK = window.grSilk(document.getElementById("heroImg"));
   (() => { const v = document.getElementById("heroVid"), SRC = "https://stream.mux.com/kimF2ha9zLrX64H00UgLGPflCzNtl1T0215MlAmeOztv8.m3u8";
-    if (!v || reduce) return; const show = () => (v.muted = true, v.play()).then(() => v.classList.add("on")).catch(() => {});
+    if (!v || reduce || SILK) return; const show = () => (v.muted = true, v.play()).then(() => v.classList.add("on")).catch(() => {});
   // no celular, se o navegador segurar o autoplay, o vídeo começa no primeiro toque
   ["touchstart","pointerdown","scroll"].forEach(ev => addEventListener(ev, () => { if (v.paused && v.readyState >= 2) show(); }, {passive:true, once:true}));
     if (window.Hls && Hls.isSupported()){ const h = new Hls(); h.loadSource(SRC); h.attachMedia(v); h.on(Hls.Events.MANIFEST_PARSED, show); }

@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#1A0C10">
 <title>Gran Reserva Residence</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@300;400;500&family=Marcellus&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@300;400;500&family=Marcellus&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Inter:wght@300;400;500;600&family=Instrument+Serif:ital@0;1&display=swap">
 <style>
 /* Layout: torre 3D girável como protagonista sobre um céu de grafite azulado; depois o prédio vira um seletor de unidades.
    Identidade Gran Reserva: céu noturno azul-marinho na abertura, páginas em vinho profundo (o tom do selo), dourado das molduras de LED nos detalhes. */
@@ -671,10 +671,10 @@ html.tour-open,html.tour-open body{overflow:hidden}
 /* ===== efeitos comuns (vitrine Não Codei, adaptados) ===== */
 /* j09 cursor: ponto imediato + anel com atraso; substitui a seta do sistema só no computador */
 .fxc,.fxr{position:fixed;left:0;top:0;z-index:9999;pointer-events:none;border-radius:50%;opacity:0;transition:opacity .25s}
-.fxc{width:6px;height:6px;margin:-3px 0 0 -3px;background:#F2C3A6}
-.fxr{width:34px;height:34px;margin:-17px 0 0 -17px;border:1px solid rgba(242,195,166,.6);transition:opacity .25s,width .3s,height .3s,margin .3s,background-color .3s,border-color .3s}
-.fxr.big{width:58px;height:58px;margin:-29px 0 0 -29px;background-color:rgba(197,88,58,.12);border-color:rgba(242,195,166,.9)}
-.fxr.txt{width:2px;height:26px;margin:-13px 0 0 -1px;border-radius:1px;background-color:#F2C3A6;border-color:transparent}
+.fxc{width:4px;height:4px;margin:-2px 0 0 -2px;background:#F2C3A6}
+.fxr{width:22px;height:22px;margin:-11px 0 0 -11px;border:1px solid rgba(242,195,166,.6);transition:opacity .25s,width .3s,height .3s,margin .3s,background-color .3s,border-color .3s}
+.fxr.big{width:38px;height:38px;margin:-19px 0 0 -19px;background-color:rgba(197,88,58,.12);border-color:rgba(242,195,166,.9)}
+.fxr.txt{width:2px;height:20px;margin:-10px 0 0 -1px;border-radius:1px;background-color:#F2C3A6;border-color:transparent}
 html.fx-cur .fxc,html.fx-cur .fxr{opacity:1}
 html.fx-cur,html.fx-cur *{cursor:none!important}
 html.fx-off .fxc,html.fx-off .fxr{opacity:0!important}
@@ -693,6 +693,36 @@ html.fx-off .fxc,html.fx-off .fxr{opacity:0!important}
 .feat.tl-list{grid-template-columns:minmax(0,1fr)!important;gap:0!important}
 .feat.tl-list>li{padding-block:12px 14px}
 .feat.tl-list>li::before{top:18px}
+
+/* ===== visual da Haacke aplicado ao Gran Reserva: arte líquida fixa ao fundo, menu de vidro, tipografia Instrument Serif + Inter ===== */
+:root{--display:"Instrument Serif", Georgia, serif; --body:"Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --gold:#EBB08C; --amber:#EBB08C; --amber-soft:rgba(235,176,140,.10); --wine:#A9452B; --wine-hi:#C5583A}
+html{background:#0d0709}
+body{margin:0;background:transparent;letter-spacing:-.005em}
+::selection{background:#F2C3A6;color:#120A0C}
+.fx-bg{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none;background:#0d0709}
+.fx-bg .liq{position:absolute;inset:-20%;background:
+  radial-gradient(38% 30% at 22% 28%,rgba(197,88,58,.95),transparent 70%),
+  radial-gradient(30% 40% at 78% 22%,rgba(160,52,48,.95),transparent 70%),
+  radial-gradient(45% 35% at 65% 78%,rgba(217,116,79,.7),transparent 70%),
+  radial-gradient(35% 30% at 18% 82%,rgba(110,32,42,.95),transparent 70%);
+  filter:blur(30px);animation:fxliq 26s ease-in-out infinite alternate}
+@keyframes fxliq{0%{transform:rotate(0) scale(1)}50%{transform:rotate(8deg) scale(1.08) translate(2%,-2%)}100%{transform:rotate(-6deg) scale(1.04) translate(-2%,2%)}}
+.fx-bg video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity 1.2s;filter:hue-rotate(148deg) saturate(.85) brightness(.85)}
+.fx-bg video.on{opacity:1}
+.fx-bg .veil{position:absolute;inset:0;background:rgba(13,7,9,.72)}
+.conceito,.local,.plans,.arq,.explorer{background:transparent!important}
+.rform,.type,.specs2 div,.dist li{-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
+.rform{background:rgba(34,19,26,.55)!important}
+/* menu em pílula de vidro */
+.bar{background:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;padding:14px max(12px,env(safe-area-inset-right,0px)) 0 max(12px,env(safe-area-inset-left,0px))}
+.bar .wrap{max-width:1024px;border-radius:999px;padding:10px 12px 10px 22px!important;background:rgba(18,10,12,.35);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);box-shadow:inset 0 1px 1px rgba(255,236,226,.1);position:relative}
+.bar .wrap::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:1.4px;pointer-events:none;
+  background:linear-gradient(180deg,rgba(242,195,166,.5) 0%,rgba(242,195,166,.16) 20%,transparent 40%,transparent 60%,rgba(242,195,166,.16) 80%,rgba(242,195,166,.5) 100%);
+  -webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask-composite:exclude}
+.bar nav{font:500 14px var(--body)!important;gap:28px!important;color:rgba(255,255,255,.8)!important}
+.brand{font-family:var(--body)!important;font-weight:600!important;font-size:15px!important;letter-spacing:.16em!important}
+.cta-sm{background:#fff!important;color:#1a0d0f!important;border:0!important;padding:9px 20px!important;font:600 13px var(--body)!important;letter-spacing:0!important}
 </style>
 </head>
 <body>
@@ -715,6 +745,7 @@ html.fx-off .fxc,html.fx-off .fxr{opacity:0!important}
   <li><a href="#reservar"><span>Reserva</span><b>08</b><i></i></a></li>
 </ol>
 
+<div class="fx-bg" id="fxBg" aria-hidden="true"><div class="liq"></div><video id="fxVid" autoplay muted loop playsinline></video><i class="veil"></i></div>
 <header class="bar">
   <div class="wrap">
     <div class="bar-left"><button class="back-home" id="backHome" type="button" aria-label="Voltar para o site da Haacke"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M12.5 4 6.5 10l6 6" fill="none" stroke="currentColor" stroke-width="1.8"/></svg><span>Haacke</span></button>
@@ -2765,6 +2796,13 @@ grOdo(document.querySelectorAll(".hero-facts b"), {now:true, delay:1.2});
     l.style.setProperty("--p", p.toFixed(3)); l.querySelectorAll(":scope>li").forEach(li => li.classList.toggle("on", reduce || li.getBoundingClientRect().top + 24 < innerHeight*.75)); });
   if (lists.length){ addEventListener("scroll", tl, {passive:true}); addEventListener("resize", tl); tl(); setInterval(tl, 600); }
 })();
+
+/* vídeo líquido do fundo (stream HLS), igual ao da Haacke; sem ele fica a arte em gradientes */
+(() => { const v = document.getElementById("fxVid"), SRC = "https://stream.mux.com/kimF2ha9zLrX64H00UgLGPflCzNtl1T0215MlAmeOztv8.m3u8";
+  if (!v || matchMedia("(prefers-reduced-motion: reduce)").matches) return; const show = () => v.play().then(() => v.classList.add("on")).catch(() => {});
+  const go = () => { if (window.Hls && Hls.isSupported()){ const h = new Hls(); h.loadSource(SRC); h.attachMedia(v); h.on(Hls.Events.MANIFEST_PARSED, show); }
+    else if (v.canPlayType("application/vnd.apple.mpegurl")){ v.src = SRC; v.addEventListener("loadeddata", show, {once:true}); } };
+  if (window.Hls) go(); else { const sc = document.createElement("script"); sc.src = "https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.5.17/hls.min.js"; sc.onload = go; document.head.appendChild(sc); } })();
 </script>
 
 </body>

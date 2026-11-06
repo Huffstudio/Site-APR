@@ -651,6 +651,21 @@ html.tour-open,html.tour-open body{overflow:hidden}
 .luz:hover::after{opacity:1}
 .hcard.luz::after,.shot.luz::after,.media.luz::after{--lr:380px}
 @media (hover:none),(prefers-reduced-motion:reduce){.luz::after{display:none}}
+/* odômetro: cada dígito é uma fita de 0 a 9 que desliza até o número */
+.odo{display:inline-flex;line-height:1;vertical-align:baseline}
+.odo,.odo *{font:inherit!important;letter-spacing:inherit!important;color:inherit!important;text-transform:none!important;margin:0!important;padding:0!important}
+.odo>span{display:inline-block!important}
+.odo .d{display:inline-block;height:1em;overflow:hidden;position:relative}
+.odo .d i{display:block;font-style:normal;transform:translateY(0);transition:transform 1.4s cubic-bezier(.2,.8,.2,1)}
+.odo .d i b{display:block!important;height:1em}
+
+/* anel de vendas (j26): o traço do tamanho da circunferência se preenche até a porcentagem */
+.mirror-ring{display:flex;align-items:center;gap:10px;padding-left:12px;border-left:1px solid rgba(246,236,232,.18)}
+.mirror-ring svg{width:34px;height:34px;transform:rotate(-90deg)}
+.mirror-ring circle{fill:none;stroke-width:4}
+.mirror-ring .bg{stroke:rgba(246,236,232,.15)}
+.mirror-ring .fg{stroke:#d8454f;stroke-linecap:round;transition:stroke-dashoffset 1.4s cubic-bezier(.2,.8,.2,1)}
+.mirror-ring span{display:grid;line-height:1.15}.mirror-ring span b{font-size:14px}
 </style>
 </head>
 <body>
@@ -2090,7 +2105,12 @@ document.getElementById("hpCity").addEventListener("load", placeCity);
   const mb = document.getElementById("mirrorBtn"), leg = document.getElementById("mirrorLeg");
   const count = {disp:0,res:0,vend:0};
   ["A","B"].forEach(t => { for (let k=1;k<=20;k++) ["01","02"].forEach(tp => count[unitStatus({torre:t,andar:k,tipo:tp})]++); });
-  leg.querySelectorAll("b").forEach(b => b.textContent = count[b.dataset.st]);
+  leg.querySelectorAll("b[data-st]").forEach(b => b.textContent = count[b.dataset.st]);
+  { const tot = (count.disp||0)+(count.res||0)+(count.vend||0), pc = tot ? Math.round((count.vend||0)/tot*100) : 0, C = 2*Math.PI*14;
+    let r = leg.querySelector(".mirror-ring");
+    if (!r){ r = document.createElement("li"); r.className = "mirror-ring"; r.innerHTML = `<svg viewBox="0 0 34 34" aria-hidden="true"><circle class="bg" cx="17" cy="17" r="14"/><circle class="fg" cx="17" cy="17" r="14" stroke-dasharray="${C}" stroke-dashoffset="${C}"/></svg><span><b>0%</b>vendido</span>`; leg.appendChild(r); }
+    requestAnimationFrame(() => requestAnimationFrame(() => { r.querySelector(".fg").style.strokeDashoffset = C*(1-pc/100); }));
+    const lb = r.querySelector("b"), t0 = performance.now(); (function tick(t){ const k = Math.min(1,(t-t0)/1400), e = 1-Math.pow(1-k,3); lb.textContent = Math.round(pc*e)+"%"; if (k<1) requestAnimationFrame(tick); })(t0); }
   mb.onclick = () => { const v = mb.getAttribute("aria-pressed") !== "true"; mb.setAttribute("aria-pressed", v); leg.hidden = !v;
     stageEl.classList.toggle("mirror-on", v); if (has3d) window.grStatusMode(v); };
   const views = document.querySelectorAll(".hero-views button"), hintEl = document.getElementById("dragHint");
@@ -2629,6 +2649,27 @@ document.getElementById("rform").addEventListener("submit", e => {
     const el = ev.target.closest && ev.target.closest(".luz"); if (!el) return;
     const r = el.getBoundingClientRect(); el.style.setProperty("--lx", (ev.clientX - r.left) + "px"); el.style.setProperty("--ly", (ev.clientY - r.top) + "px"); }); }, {passive:true});
 })();
+/* odômetro (j18): troca os dígitos por fitas 0–9 e gira até o valor quando aparece na tela */
+function grOdo(els, opt){
+  opt = opt || {};
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  els.forEach(el => {
+    if (el.dataset.odo || reduce) return; el.dataset.odo = 1;
+    const txt = el.textContent, wrap = document.createElement("span"); wrap.className = "odo"; wrap.setAttribute("aria-label", txt);
+    const strips = [];
+    for (const ch of txt){
+      if (/\d/.test(ch)){ const d = document.createElement("span"); d.className = "d"; d.setAttribute("aria-hidden","true");
+        d.innerHTML = "<i>" + Array.from({length:10},(_,k)=>"<b>"+k+"</b>").join("") + "</i>"; d.dataset.v = ch; wrap.appendChild(d); strips.push(d); }
+      else { const s = document.createElement("span"); s.setAttribute("aria-hidden","true"); s.textContent = ch; s.style.whiteSpace = "pre"; wrap.appendChild(s); }
+    }
+    el.textContent = ""; el.appendChild(wrap);
+    const go = () => strips.forEach((d,i) => { const t = d.firstChild; t.style.transitionDelay = (i*.12 + (opt.delay||0)) + "s"; t.style.transform = `translateY(-${d.dataset.v}em)`; });
+    if (opt.now){ requestAnimationFrame(() => requestAnimationFrame(go)); return; }
+    const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting){ go(); io.disconnect(); } }), {threshold:.4}); io.observe(el);
+  });
+}
+
+grOdo(document.querySelectorAll(".hero-facts b"), {now:true, delay:1.2});
 </script>
 
 </body>

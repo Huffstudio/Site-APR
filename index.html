@@ -21,6 +21,7 @@
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
 html{background:#0d0709}
+section[id]{scroll-margin-top:100px}
 body{margin:0;background:transparent;color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:50;background:var(--bg)}
 img{max-width:100%;display:block}
@@ -178,6 +179,41 @@ footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
 .emp-back svg{width:16px;height:16px}
 body.locked{overflow:hidden}
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.card img,.go i{transition:none}}
+/* odômetro: cada dígito é uma fita de 0 a 9 que desliza até o número */
+.odo{display:inline-flex;line-height:1;vertical-align:baseline}
+.odo,.odo *{font:inherit!important;letter-spacing:inherit!important;color:inherit!important;text-transform:none!important;margin:0!important;padding:0!important}
+.odo>span{display:inline-block!important}
+.odo .d{display:inline-block;height:1em;overflow:hidden;position:relative}
+.odo .d i{display:block;font-style:normal;transform:translateY(0);transition:transform 1.4s cubic-bezier(.2,.8,.2,1)}
+.odo .d i b{display:block!important;height:1em}
+
+/* título da abertura palavra por palavra (j16) */
+.hero h1.split{opacity:1;animation:none}
+.hero h1 .w{display:inline-block;opacity:0;transform:translateY(.35em);filter:blur(6px);animation:wIn .9s cubic-bezier(.16,1,.3,1) forwards}
+@keyframes wIn{to{opacity:1;transform:none;filter:none}}
+/* manifesto que acende com a rolagem (j04) */
+.fill .fw{color:rgba(245,236,231,.18);transition:color .25s}
+.fill .fw.on{color:var(--fg)}
+.fill span .fw.on{color:var(--gold)}
+/* pilares como linha do tempo que se desenha (j07) */
+.pillars{position:relative;padding-left:28px}
+.pillars::before{content:"";position:absolute;left:6px;top:24px;bottom:24px;width:1px;background:var(--line)}
+.pillars .tl{position:absolute;left:6px;top:24px;width:1px;height:calc(100% - 48px);background:linear-gradient(var(--gold),var(--wine));transform-origin:top;transform:scaleY(var(--p,0))}
+.pillars li{position:relative}
+.pillars li::before{content:"";position:absolute;left:-27px;top:25px;width:11px;height:11px;border-radius:50%;background:var(--bg);border:1px solid var(--line);transition:background .4s,border-color .4s,box-shadow .4s}
+.pillars li.on::before{background:var(--gold);border-color:var(--gold);box-shadow:0 0 0 5px rgba(217,116,79,.15)}
+.pillars li b,.pillars li span{transition:opacity .4s}.pillars li:not(.on) b,.pillars li:not(.on) span{opacity:.45}
+/* luz que segue o mouse (j12) */
+.luz{position:relative}
+.luz::before{content:"";position:absolute;inset:0;z-index:3;border-radius:inherit;pointer-events:none;opacity:0;transition:opacity .35s;background:radial-gradient(320px circle at var(--lx,50%) var(--ly,50%),rgba(242,195,166,.16),transparent 70%)}
+.luz:hover::before{opacity:1}
+/* cursor com ponto e anel atrasado (j09) */
+.cur,.cur-r{position:fixed;left:0;top:0;z-index:200;pointer-events:none;border-radius:50%;transform:translate3d(-100px,-100px,0)}
+.cur{width:6px;height:6px;margin:-3px 0 0 -3px;background:#F2C3A6}
+.cur-r{width:36px;height:36px;margin:-18px 0 0 -18px;border:1px solid rgba(242,195,166,.55);transition:width .3s,height .3s,margin .3s,background .3s,border-color .3s}
+.cur-r.big{width:64px;height:64px;margin:-32px 0 0 -32px;background:rgba(197,88,58,.12);border-color:rgba(242,195,166,.8)}
+@media (hover:none),(pointer:coarse){.cur,.cur-r{display:none}}
+@media (prefers-reduced-motion:reduce){.hero h1 .w{animation:none;opacity:1;transform:none;filter:none}.fill .fw{color:inherit}.pillars .tl{transform:none}}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.5.17/hls.min.js"></script>
 </head>
@@ -209,9 +245,9 @@ body.locked{overflow:hidden}
   <div class="wrap about-grid">
     <div>
       <div class="kicker">A empresa</div>
-      <h2>Cada projeto nasce <span>da arquitetura</span>, não da planilha.</h2>
+      <h2 class="fill">Cada projeto nasce <span>da arquitetura</span>, não da planilha.</h2>
       <p>A Haacke assina a arquitetura dos seus próprios empreendimentos. Plantas amplas, poucos apartamentos por andar e áreas de lazer que funcionam como extensão da casa.</p>
-      <ul class="pillars">
+      <ul class="pillars"><i class="tl" aria-hidden="true"></i>
         <li><b>Projeto autoral</b><span>Arquitetura própria, do conceito ao detalhamento das plantas.</span></li>
         <li><b>Plantas generosas</b><span>Apartamentos amplos, com opção de unificar o andar inteiro.</span></li>
         <li><b>Lazer completo</b><span>Espaços de convivência, bem-estar e esporte dentro do condomínio.</span></li>
@@ -311,8 +347,14 @@ body.locked{overflow:hidden}
   btns.forEach(b => b.onclick = () => {
     btns.forEach(x => x.setAttribute("aria-pressed", x === b));
     const f = b.dataset.f;
+    const before = new Map([...cards].filter(c => !c.hidden).map(c => [c, c.getBoundingClientRect()]));
     cards.forEach(c => c.hidden = !(f === "todos" || c.dataset.fase === f || (c.dataset.fase === "breve" && f === "todos")));
     if (![...cards].some(c => !c.hidden)) cards.forEach(c => { if (c.dataset.fase === "breve") c.hidden = false; });
+    if (reduce) return;
+    cards.forEach(c => { if (c.hidden) return; const a = before.get(c), b2 = c.getBoundingClientRect();
+      if (a){ const dx = a.left-b2.left, dy = a.top-b2.top, sx = a.width/b2.width, sy = a.height/b2.height;
+        c.animate([{transformOrigin:"0 0", transform:`translate(${dx}px,${dy}px) scale(${sx},${sy})`},{transformOrigin:"0 0", transform:"none"}],{duration:600, easing:"cubic-bezier(.2,.8,.2,1)"}); }
+      else c.animate([{opacity:0, transform:"scale(.94)"},{opacity:1, transform:"none"}],{duration:450, easing:"ease-out"}); });
   });
   // abrir o empreendimento dentro da própria página, sem trocar de endereço
   const SRC = {"gran-reserva": "gran-reserva/"};
@@ -365,6 +407,71 @@ body.locked{overflow:hidden}
     document.body.appendChild(a); a.click(); a.remove();
     document.getElementById("cFine").textContent = "Abrindo o WhatsApp. Se não abrir, a mensagem é: " + txt;
   });
+})();
+/* odômetro (j18): troca os dígitos por fitas 0–9 e gira até o valor quando aparece na tela */
+function grOdo(els, opt){
+  opt = opt || {};
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  els.forEach(el => {
+    if (el.dataset.odo || reduce) return; el.dataset.odo = 1;
+    const txt = el.textContent, wrap = document.createElement("span"); wrap.className = "odo"; wrap.setAttribute("aria-label", txt);
+    const strips = [];
+    for (const ch of txt){
+      if (/\d/.test(ch)){ const d = document.createElement("span"); d.className = "d"; d.setAttribute("aria-hidden","true");
+        d.innerHTML = "<i>" + Array.from({length:10},(_,k)=>"<b>"+k+"</b>").join("") + "</i>"; d.dataset.v = ch; wrap.appendChild(d); strips.push(d); }
+      else { const s = document.createElement("span"); s.setAttribute("aria-hidden","true"); s.textContent = ch; s.style.whiteSpace = "pre"; wrap.appendChild(s); }
+    }
+    el.textContent = ""; el.appendChild(wrap);
+    const go = () => strips.forEach((d,i) => { const t = d.firstChild; t.style.transitionDelay = (i*.12 + (opt.delay||0)) + "s"; t.style.transform = `translateY(-${d.dataset.v}em)`; });
+    if (opt.now){ requestAnimationFrame(() => requestAnimationFrame(go)); return; }
+    const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting){ go(); io.disconnect(); } }), {threshold:.4}); io.observe(el);
+  });
+}
+
+(() => {
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches, fine = matchMedia("(hover:hover) and (pointer:fine)").matches;
+  // j16: título entra palavra por palavra
+  const h = document.querySelector(".hero h1");
+  if (h && !reduce){ let n = 0; const walk = el => [...el.childNodes].forEach(nd => {
+      if (nd.nodeType === 3){ const frag = document.createDocumentFragment(); nd.textContent.split(/(\s+)/).forEach(t => { if (!t) return;
+        if (/^\s+$/.test(t)){ frag.appendChild(document.createTextNode(t)); return; }
+        const w = document.createElement("span"); w.className = "w"; w.textContent = t; w.style.animationDelay = (.15 + n++*.07)+"s"; frag.appendChild(w); }); nd.replaceWith(frag); }
+      else if (nd.nodeType === 1 && nd.tagName !== "BR") walk(nd); });
+    walk(h); h.classList.remove("in2"); h.classList.add("split");
+    h.style.background = "none"; h.style.color = "#fff"; h.querySelectorAll("em .w").forEach(w => w.style.color = "#F2C3A6"); }
+  // j04: manifesto acende conforme a rolagem
+  const fill = document.querySelector(".fill"); let fws = [];
+  if (fill && !reduce){ const walk = el => [...el.childNodes].forEach(nd => { if (nd.nodeType === 3){ const frag = document.createDocumentFragment();
+      nd.textContent.split(/(\s+)/).forEach(t => { if (!t) return; if (/^\s+$/.test(t)) frag.appendChild(document.createTextNode(t)); else { const w = document.createElement("span"); w.className = "fw"; w.textContent = t; frag.appendChild(w); } }); nd.replaceWith(frag); }
+      else if (nd.nodeType === 1) walk(nd); }); walk(fill); fws = [...fill.querySelectorAll(".fw")]; }
+  // j07: linha dos pilares se desenha
+  const pil = document.querySelector(".pillars"), items = pil ? [...pil.querySelectorAll("li")] : [];
+  const onScroll = () => {
+    if (fws.length){ const r = fill.getBoundingClientRect(), p = Math.min(1, Math.max(0, (innerHeight*.85 - r.top) / (innerHeight*.5))); const k = p*(fws.length+3);
+      fws.forEach((w,i) => w.classList.toggle("on", i < k-1)); }
+    if (pil){ const r = pil.getBoundingClientRect(), p = Math.min(1, Math.max(0, (innerHeight*.75 - r.top) / r.height)); pil.style.setProperty("--p", reduce ? 1 : p.toFixed(3));
+      items.forEach(li => { const lr = li.getBoundingClientRect(); li.classList.toggle("on", reduce || lr.top + 30 < innerHeight*.75); }); }
+  };
+  addEventListener("scroll", onScroll, {passive:true}); addEventListener("resize", onScroll); onScroll();
+  // j18: números do cartão giram como odômetro
+  grOdo(document.querySelectorAll(".facts b"));
+  // j12: luz que segue o mouse nos cartões e no formulário
+  if (fine){ document.querySelectorAll(".card, .form").forEach(el => el.classList.add("luz"));
+    document.addEventListener("pointermove", e => { const el = e.target.closest && e.target.closest(".luz"); if (!el) return; const r = el.getBoundingClientRect(); el.style.setProperty("--lx", (e.clientX-r.left)+"px"); el.style.setProperty("--ly", (e.clientY-r.top)+"px"); }, {passive:true}); }
+  // j09: cursor com ponto imediato e anel com atraso
+  if (fine && !reduce){ const d = document.createElement("div"), r = document.createElement("div"); d.className = "cur"; r.className = "cur-r"; document.body.append(d, r);
+    let mx = -100, my = -100, rx = -100, ry = -100;
+    addEventListener("pointermove", e => { mx = e.clientX; my = e.clientY; d.style.transform = `translate3d(${mx}px,${my}px,0)`; r.classList.toggle("big", !!(e.target.closest && e.target.closest("a,button,input,select,textarea,.card"))); }, {passive:true});
+    (function f(){ rx += (mx-rx)*.16; ry += (my-ry)*.16; r.style.transform = `translate3d(${rx}px,${ry}px,0)`; requestAnimationFrame(f); })(); }
+  // j14: botões com mola (puxam na direção do mouse e voltam oscilando)
+  if (fine && !reduce){ const spring = el => { let x = 0, y = 0, vx = 0, vy = 0, tx = 0, ty = 0, run = false;
+      const step = () => { const k = .12, dmp = .78; vx = (vx + (tx-x)*k)*dmp; vy = (vy + (ty-y)*k)*dmp; x += vx; y += vy; el.style.transform = `translate(${x.toFixed(2)}px,${y.toFixed(2)}px)`;
+        if (Math.abs(vx)+Math.abs(vy)+Math.abs(tx-x)+Math.abs(ty-y) > .05) requestAnimationFrame(step); else { run = false; el.style.transform = ""; } };
+      const kick = () => { if (!run){ run = true; requestAnimationFrame(step); } };
+      el.addEventListener("pointermove", e => { const r = el.getBoundingClientRect(); tx = (e.clientX-(r.left+r.width/2))*.25; ty = (e.clientY-(r.top+r.height/2))*.35; kick(); });
+      el.addEventListener("pointerleave", () => { tx = ty = 0; kick(); }); };
+    const hook = () => document.querySelectorAll(".early, .nav-r .g, .btn.solid").forEach(el => { if (!el.dataset.spr){ el.dataset.spr = 1; spring(el); } });
+    hook(); new MutationObserver(hook).observe(document.getElementById("ctaBox") || document.body, {childList:true}); }
 })();
 </script>
 </body>

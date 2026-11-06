@@ -207,13 +207,30 @@ body.locked{overflow:hidden}
 .luz{position:relative}
 .luz::before{content:"";position:absolute;inset:0;z-index:3;border-radius:inherit;pointer-events:none;opacity:0;transition:opacity .35s;background:radial-gradient(320px circle at var(--lx,50%) var(--ly,50%),rgba(242,195,166,.16),transparent 70%)}
 .luz:hover::before{opacity:1}
-/* cursor com ponto e anel atrasado (j09) */
-.cur,.cur-r{position:fixed;left:0;top:0;z-index:200;pointer-events:none;border-radius:50%;transform:translate3d(-100px,-100px,0)}
-.cur{width:6px;height:6px;margin:-3px 0 0 -3px;background:#F2C3A6}
-.cur-r{width:36px;height:36px;margin:-18px 0 0 -18px;border:1px solid rgba(242,195,166,.55);transition:width .3s,height .3s,margin .3s,background .3s,border-color .3s}
-.cur-r.big{width:64px;height:64px;margin:-32px 0 0 -32px;background:rgba(197,88,58,.12);border-color:rgba(242,195,166,.8)}
-@media (hover:none),(pointer:coarse){.cur,.cur-r{display:none}}
+
 @media (prefers-reduced-motion:reduce){.hero h1 .w{animation:none;opacity:1;transform:none;filter:none}.fill .fw{color:inherit}.pillars .tl{transform:none}}
+/* ===== efeitos comuns (vitrine Não Codei, adaptados) ===== */
+/* j09 cursor: ponto imediato + anel com atraso; substitui a seta do sistema só no computador */
+.fxc,.fxr{position:fixed;left:0;top:0;z-index:9999;pointer-events:none;border-radius:50%;opacity:0;transition:opacity .25s}
+.fxc{width:6px;height:6px;margin:-3px 0 0 -3px;background:#F2C3A6}
+.fxr{width:34px;height:34px;margin:-17px 0 0 -17px;border:1px solid rgba(242,195,166,.6);transition:opacity .25s,width .3s,height .3s,margin .3s,background-color .3s,border-color .3s}
+.fxr.big{width:58px;height:58px;margin:-29px 0 0 -29px;background-color:rgba(197,88,58,.12);border-color:rgba(242,195,166,.9)}
+.fxr.txt{width:2px;height:26px;margin:-13px 0 0 -1px;border-radius:1px;background-color:#F2C3A6;border-color:transparent}
+html.fx-cur .fxc,html.fx-cur .fxr{opacity:1}
+html.fx-cur,html.fx-cur *{cursor:none!important}
+html.fx-off .fxc,html.fx-off .fxr{opacity:0!important}
+/* j16 título palavra por palavra */
+.wi .w{display:inline-block;opacity:0;transform:translateY(.4em);filter:blur(6px);transition:opacity .9s cubic-bezier(.16,1,.3,1),transform .9s cubic-bezier(.16,1,.3,1),filter .9s}
+.wi.in .w{opacity:1;transform:none;filter:none}
+/* j07 lista como linha do tempo que se desenha */
+.tl-list{position:relative;padding-left:26px!important}
+.tl-list>.tl{position:absolute;left:5px;top:12px;bottom:12px;width:1px;background:rgba(240,210,195,.15)}
+.tl-list>.tl::after{content:"";position:absolute;inset:0;background:linear-gradient(#D9744F,#8E2F2B);transform-origin:top;transform:scaleY(var(--p,0))}
+.tl-list>li{position:relative}
+.tl-list>li::before{content:"";position:absolute;left:-26px;top:17px;width:11px;height:11px;border-radius:50%;background:#120A0C;border:1px solid rgba(240,210,195,.25);transition:background .4s,border-color .4s,box-shadow .4s}
+.tl-list>li.on::before{background:#D9744F;border-color:#D9744F;box-shadow:0 0 0 5px rgba(217,116,79,.15)}
+.tl-list>li>*{transition:opacity .4s}.tl-list>li:not(.on)>*{opacity:.45}
+@media (prefers-reduced-motion:reduce){.wi .w{opacity:1;transform:none;filter:none}.tl-list>li:not(.on)>*{opacity:1}}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.5.17/hls.min.js"></script>
 </head>
@@ -225,7 +242,7 @@ body.locked{overflow:hidden}
       <a class="logo" href="#topo" aria-label="Haacke, início"><svg viewBox="0 0 22 26" width="20" height="24" aria-hidden="true"><rect x="1" y="1" width="20" height="24" fill="none" stroke="#C5583A" stroke-width="1.3"/><path d="M6.5 5v16M15.5 5v16" stroke="#D9744F" stroke-width="1.5"/><path d="M5 17.5 15.5 7M6.5 19 17 8.5" stroke="#D9744F" stroke-width="1.1"/><path d="M8.5 14.5l1.6 1.6M10.5 12.5l1.6 1.6M12.5 10.5l1.6 1.6" stroke="#D9744F" stroke-width=".9"/></svg>HAACKE</a>
       <nav aria-label="Principal"><a href="#empreendimentos">Empreendimentos</a><a href="#sobre">A empresa</a><a href="#contato">Contato</a></nav>
     </div>
-    <div class="nav-r"><a class="t" href="#contato">Fale conosco</a><a class="g glass" href="#empreendimentos">Empreendimentos</a></div>
+    <div class="nav-r"><a class="t" href="#contato">Fale conosco</a><a class="g glass" href="#empreendimentos" data-spring>Empreendimentos</a></div>
   </div>
 </header>
 
@@ -332,7 +349,7 @@ body.locked{overflow:hidden}
   const type = (el, txt) => { clearInterval(tw); let i = 0; el.placeholder = ""; tw = setInterval(() => { el.placeholder = txt.slice(0, ++i); if (i >= txt.length) clearInterval(tw); }, 60); };
   const arrow = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
   const check = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
-  function showBtn(){ box.innerHTML = '<button class="early pop" type="button">Receber os próximos lançamentos</button>'; box.firstChild.onclick = showForm; }
+  function showBtn(){ box.innerHTML = '<button class="early pop" type="button" data-spring>Receber os próximos lançamentos</button>'; box.firstChild.onclick = showForm; }
   function showForm(){
     box.innerHTML = `<form class="mail pop" novalidate><input type="email" aria-label="Seu e-mail" autocomplete="email" required><button type="submit" aria-label="Enviar">${arrow}</button></form>`;
     const f = box.firstChild, inp = f.querySelector("input"); inp.focus(); type(inp, "Digite seu e-mail para receber os lançamentos");
@@ -458,20 +475,56 @@ function grOdo(els, opt){
   // j12: luz que segue o mouse nos cartões e no formulário
   if (fine){ document.querySelectorAll(".card, .form").forEach(el => el.classList.add("luz"));
     document.addEventListener("pointermove", e => { const el = e.target.closest && e.target.closest(".luz"); if (!el) return; const r = el.getBoundingClientRect(); el.style.setProperty("--lx", (e.clientX-r.left)+"px"); el.style.setProperty("--ly", (e.clientY-r.top)+"px"); }, {passive:true}); }
-  // j09: cursor com ponto imediato e anel com atraso
-  if (fine && !reduce){ const d = document.createElement("div"), r = document.createElement("div"); d.className = "cur"; r.className = "cur-r"; document.body.append(d, r);
-    let mx = -100, my = -100, rx = -100, ry = -100;
-    addEventListener("pointermove", e => { mx = e.clientX; my = e.clientY; d.style.transform = `translate3d(${mx}px,${my}px,0)`; r.classList.toggle("big", !!(e.target.closest && e.target.closest("a,button,input,select,textarea,.card"))); }, {passive:true});
-    (function f(){ rx += (mx-rx)*.16; ry += (my-ry)*.16; r.style.transform = `translate3d(${rx}px,${ry}px,0)`; requestAnimationFrame(f); })(); }
-  // j14: botões com mola (puxam na direção do mouse e voltam oscilando)
-  if (fine && !reduce){ const spring = el => { let x = 0, y = 0, vx = 0, vy = 0, tx = 0, ty = 0, run = false;
-      const step = () => { const k = .12, dmp = .78; vx = (vx + (tx-x)*k)*dmp; vy = (vy + (ty-y)*k)*dmp; x += vx; y += vy; el.style.transform = `translate(${x.toFixed(2)}px,${y.toFixed(2)}px)`;
-        if (Math.abs(vx)+Math.abs(vy)+Math.abs(tx-x)+Math.abs(ty-y) > .05) requestAnimationFrame(step); else { run = false; el.style.transform = ""; } };
+
+})();
+/* ===== efeitos comuns (vitrine Não Codei, adaptados) ===== */
+(() => {
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches, fine = matchMedia("(hover:hover) and (pointer:fine)").matches;
+  const root = document.documentElement;
+  // j09: cursor
+  if (fine && !reduce){
+    const d = document.createElement("div"), r = document.createElement("div"); d.className = "fxc"; r.className = "fxr"; document.body.append(d, r);
+    let mx = 0, my = 0, rx = 0, ry = 0, seen = false, raf = 0;
+    const loop = () => { rx += (mx-rx)*.2; ry += (my-ry)*.2; r.style.transform = `translate3d(${rx}px,${ry}px,0)`;
+      raf = (Math.abs(mx-rx)+Math.abs(my-ry) > .3) ? requestAnimationFrame(loop) : 0; };
+    addEventListener("pointermove", e => {
+      if (e.pointerType !== "mouse") return;
+      mx = e.clientX; my = e.clientY; if (!seen){ seen = true; rx = mx; ry = my; root.classList.add("fx-cur"); }
+      d.style.transform = `translate3d(${mx}px,${my}px,0)`; if (!raf) raf = requestAnimationFrame(loop);
+      const t = e.target, inp = t.closest && t.closest("input:not([type=range]):not([type=checkbox]),textarea,[contenteditable]");
+      r.classList.toggle("txt", !!inp);
+      r.classList.toggle("big", !inp && !!(t.closest && t.closest("a,button,select,label,[role=button],.card,.hp-fl,.room-hs,.u-hs,canvas")));
+      root.classList.remove("fx-off");
+    }, {passive:true});
+    document.addEventListener("mouseleave", () => root.classList.add("fx-off"));
+    addEventListener("blur", () => root.classList.add("fx-off"));
+    // sobre um iframe o mouse some para a página de dentro: esconde aqui para não ficar parado
+    document.addEventListener("mouseover", e => { if (e.target.tagName === "IFRAME") root.classList.add("fx-off"); });
+  }
+  // j14: botões com mola
+  if (fine && !reduce){
+    const spring = el => { let x = 0, y = 0, vx = 0, vy = 0, tx = 0, ty = 0, run = false;
+      const step = () => { vx = (vx + (tx-x)*.12)*.78; vy = (vy + (ty-y)*.12)*.78; x += vx; y += vy; el.style.translate = `${x.toFixed(2)}px ${y.toFixed(2)}px`;
+        if (Math.abs(vx)+Math.abs(vy)+Math.abs(tx-x)+Math.abs(ty-y) > .05) requestAnimationFrame(step); else { run = false; el.style.translate = ""; } };
       const kick = () => { if (!run){ run = true; requestAnimationFrame(step); } };
-      el.addEventListener("pointermove", e => { const r = el.getBoundingClientRect(); tx = (e.clientX-(r.left+r.width/2))*.25; ty = (e.clientY-(r.top+r.height/2))*.35; kick(); });
+      el.addEventListener("pointermove", e => { const b = el.getBoundingClientRect(); tx = (e.clientX-(b.left+b.width/2))*.22; ty = (e.clientY-(b.top+b.height/2))*.3; kick(); });
       el.addEventListener("pointerleave", () => { tx = ty = 0; kick(); }); };
-    const hook = () => document.querySelectorAll(".early, .nav-r .g, .btn.solid").forEach(el => { if (!el.dataset.spr){ el.dataset.spr = 1; spring(el); } });
-    hook(); new MutationObserver(hook).observe(document.getElementById("ctaBox") || document.body, {childList:true}); }
+    const hook = () => document.querySelectorAll("[data-spring]").forEach(el => { if (!el.dataset.spr){ el.dataset.spr = 1; spring(el); } });
+    hook(); new MutationObserver(hook).observe(document.body, {childList:true, subtree:true});
+  }
+  // j16: títulos entram palavra por palavra ao aparecer
+  const split = el => { let n = 0; const walk = node => [...node.childNodes].forEach(nd => {
+      if (nd.nodeType === 3){ const f = document.createDocumentFragment(); nd.textContent.split(/(\s+)/).forEach(t => { if (!t) return;
+        if (/^\s+$/.test(t)){ f.appendChild(document.createTextNode(t)); return; } const w = document.createElement("span"); w.className = "w"; w.textContent = t; w.style.transitionDelay = (n++*.07)+"s"; f.appendChild(w); }); nd.replaceWith(f); }
+      else if (nd.nodeType === 1 && nd.tagName !== "BR") walk(nd); }); walk(el); };
+  const wio = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting){ e.target.classList.add("in"); wio.unobserve(e.target); } }), {threshold:.35});
+  document.querySelectorAll("[data-wordsin]").forEach(el => { if (reduce) return; el.classList.add("wi"); split(el); wio.observe(el); });
+  // j07: listas marcadas viram linha do tempo que se desenha com a rolagem
+  const lists = [...document.querySelectorAll("[data-timeline]")];
+  lists.forEach(l => { l.classList.add("tl-list"); const t = document.createElement("i"); t.className = "tl"; t.setAttribute("aria-hidden","true"); l.prepend(t); });
+  const tl = () => lists.forEach(l => { const b = l.getBoundingClientRect(), p = reduce ? 1 : Math.min(1, Math.max(0, (innerHeight*.75 - b.top) / b.height));
+    l.style.setProperty("--p", p.toFixed(3)); l.querySelectorAll(":scope>li").forEach(li => li.classList.toggle("on", reduce || li.getBoundingClientRect().top + 24 < innerHeight*.75)); });
+  if (lists.length){ addEventListener("scroll", tl, {passive:true}); addEventListener("resize", tl); tl(); setInterval(tl, 600); }
 })();
 </script>
 </body>

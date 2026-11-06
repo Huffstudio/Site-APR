@@ -668,6 +668,31 @@ html.tour-open,html.tour-open body{overflow:hidden}
 .mirror-ring .bg{stroke:rgba(246,236,232,.15)}
 .mirror-ring .fg{stroke:#d8454f;stroke-linecap:round;transition:stroke-dashoffset 1.4s cubic-bezier(.2,.8,.2,1)}
 .mirror-ring span{display:grid;line-height:1.15}.mirror-ring span b{font-size:14px}
+/* ===== efeitos comuns (vitrine Não Codei, adaptados) ===== */
+/* j09 cursor: ponto imediato + anel com atraso; substitui a seta do sistema só no computador */
+.fxc,.fxr{position:fixed;left:0;top:0;z-index:9999;pointer-events:none;border-radius:50%;opacity:0;transition:opacity .25s}
+.fxc{width:6px;height:6px;margin:-3px 0 0 -3px;background:#F2C3A6}
+.fxr{width:34px;height:34px;margin:-17px 0 0 -17px;border:1px solid rgba(242,195,166,.6);transition:opacity .25s,width .3s,height .3s,margin .3s,background-color .3s,border-color .3s}
+.fxr.big{width:58px;height:58px;margin:-29px 0 0 -29px;background-color:rgba(197,88,58,.12);border-color:rgba(242,195,166,.9)}
+.fxr.txt{width:2px;height:26px;margin:-13px 0 0 -1px;border-radius:1px;background-color:#F2C3A6;border-color:transparent}
+html.fx-cur .fxc,html.fx-cur .fxr{opacity:1}
+html.fx-cur,html.fx-cur *{cursor:none!important}
+html.fx-off .fxc,html.fx-off .fxr{opacity:0!important}
+/* j16 título palavra por palavra */
+.wi .w{display:inline-block;opacity:0;transform:translateY(.4em);filter:blur(6px);transition:opacity .9s cubic-bezier(.16,1,.3,1),transform .9s cubic-bezier(.16,1,.3,1),filter .9s}
+.wi.in .w{opacity:1;transform:none;filter:none}
+/* j07 lista como linha do tempo que se desenha */
+.tl-list{position:relative;padding-left:26px!important}
+.tl-list>.tl{position:absolute;left:5px;top:12px;bottom:12px;width:1px;background:rgba(240,210,195,.15)}
+.tl-list>.tl::after{content:"";position:absolute;inset:0;background:linear-gradient(#D9744F,#8E2F2B);transform-origin:top;transform:scaleY(var(--p,0))}
+.tl-list>li{position:relative}
+.tl-list>li::before{content:"";position:absolute;left:-26px;top:17px;width:11px;height:11px;border-radius:50%;background:#120A0C;border:1px solid rgba(240,210,195,.25);transition:background .4s,border-color .4s,box-shadow .4s}
+.tl-list>li.on::before{background:#D9744F;border-color:#D9744F;box-shadow:0 0 0 5px rgba(217,116,79,.15)}
+.tl-list>li>*{transition:opacity .4s}.tl-list>li:not(.on)>*{opacity:.45}
+@media (prefers-reduced-motion:reduce){.wi .w{opacity:1;transform:none;filter:none}.tl-list>li:not(.on)>*{opacity:1}}
+.feat.tl-list{grid-template-columns:minmax(0,1fr)!important;gap:0!important}
+.feat.tl-list>li{padding-block:12px 14px}
+.feat.tl-list>li::before{top:18px}
 </style>
 </head>
 <body>
@@ -695,7 +720,7 @@ html.tour-open,html.tour-open body{overflow:hidden}
     <div class="bar-left"><button class="back-home" id="backHome" type="button" aria-label="Voltar para o site da Haacke"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M12.5 4 6.5 10l6 6" fill="none" stroke="currentColor" stroke-width="1.8"/></svg><span>Haacke</span></button>
     <div class="brand"><svg viewBox="0 0 30 30" aria-hidden="true"><circle cx="15" cy="15" r="14" fill="#7E2622"/><circle cx="15" cy="15" r="10.5" fill="none" stroke="#E9C9A6" stroke-width=".8"/><text x="15" y="19.2" text-anchor="middle" font-family="Marcellus, Georgia, serif" font-size="11" fill="#F4E3CF">GR</text></svg>Gran Reserva</div></div>
     <nav><a href="#conceito">Conceito</a><a href="#localizacao">Localização</a><a href="#unidades">Plantas</a><a href="#ambientes">Ambientes</a><a href="#lazer">Lazer</a></nav>
-    <a class="cta-sm" href="#reservar">Reservar</a>
+    <a class="cta-sm" href="#reservar" data-spring>Reservar</a>
   </div>
 </header>
 
@@ -734,7 +759,7 @@ html.tour-open,html.tour-open body{overflow:hidden}
     <div class="drag-hint" id="dragHint">Passe o mouse num andar · clique para entrar no apartamento</div>
     <div class="mirror" id="mirror">
       <div class="mirror-row"><div class="hero-views" role="group" aria-label="Vista do prédio" hidden><button type="button" data-v="foto" aria-pressed="true">Fachada</button><button type="button" data-v="3d" aria-pressed="false">Modelo 3D</button></div>
-      <button type="button" id="mirrorBtn" aria-pressed="false"><i></i>Espelho de vendas</button></div>
+      <button type="button" id="mirrorBtn" aria-pressed="false" data-spring><i></i>Espelho de vendas</button></div>
       <ul class="mirror-leg" id="mirrorLeg" hidden><li><i class="st-disp"></i>Disponível <b data-st="disp">0</b></li><li><i class="st-res"></i>Reservado <b data-st="res">0</b></li><li><i class="st-vend"></i>Vendido <b data-st="vend">0</b></li></ul>
     </div>
     <div class="tip3d" id="tip3d" hidden></div>
@@ -766,7 +791,7 @@ html.tour-open,html.tour-open body{overflow:hidden}
     </figure>
     <div class="l-text">
       <div class="chap" data-reveal><span class="chap-n">02</span><span class="chap-t">Localização</span></div>
-      <h2 id="t-local" data-reveal>Na esquina de duas avenidas que crescem com Sorriso</h2>
+      <h2 id="t-local" data-wordsin>Na esquina de duas avenidas que crescem com Sorriso</h2>
       <p class="addr" data-reveal>Av. Perimetral Noroeste com Av. dos Imigrantes, Sorriso, MT</p>
       <ul class="dist" id="dist"></ul>
     </div>
@@ -777,14 +802,14 @@ html.tour-open,html.tour-open body{overflow:hidden}
   <div class="wrap a-grid">
     <div>
       <div class="chap" data-reveal><span class="chap-n">03</span><span class="chap-t">Arquitetura</span></div>
-      <h2 id="t-arq" data-reveal>Uma fachada que acende quando a cidade escurece</h2>
+      <h2 id="t-arq" data-wordsin>Uma fachada que acende quando a cidade escurece</h2>
       <blockquote class="quote wait" id="arqQuote" data-reveal>O texto do arquiteto entra aqui assim que a Haacke enviar.</blockquote>
       <div class="q-by" data-reveal><i></i><span id="arqBy">Palavra do arquiteto</span></div>
-      <ul class="feat">
-        <li data-reveal><b>Molduras de LED</b>Contornam as torres de cima a baixo e marcam o prédio à noite.</li>
-        <li data-reveal><b>Pórtico de entrada</b>Três arcos iluminados em sequência levam ao hall.</li>
-        <li data-reveal><b>Fachada vinho</b>Revestimento em tons de vinho e bronze com caixilhos escuros.</li>
-        <li data-reveal><b>Rooftop entre torres</b>O lazer fica no topo do embasamento, ao ar livre.</li>
+      <ul class="feat" data-timeline>
+        <li><b>Molduras de LED</b>Contornam as torres de cima a baixo e marcam o prédio à noite.</li>
+        <li><b>Pórtico de entrada</b>Três arcos iluminados em sequência levam ao hall.</li>
+        <li><b>Fachada vinho</b>Revestimento em tons de vinho e bronze com caixilhos escuros.</li>
+        <li><b>Rooftop entre torres</b>O lazer fica no topo do embasamento, ao ar livre.</li>
       </ul>
     </div>
     <figure class="media fach" data-clip><img data-parallax data-render-img="fachada" alt="Render da fachada noturna das duas torres do Gran Reserva Residence" loading="lazy" decoding="async"><figcaption>Fachada, render oficial</figcaption></figure>
@@ -795,7 +820,7 @@ html.tour-open,html.tour-open body{overflow:hidden}
   <div class="wrap">
     <div class="sec-head">
       <div class="chap" data-reveal><span class="chap-n">04</span><span class="chap-t">Apartamentos</span></div>
-      <h2 data-reveal>Escolha seu apartamento</h2>
+      <h2 data-wordsin>Escolha seu apartamento</h2>
       <p>Dois apartamentos por andar em cada torre, ou a planta unificada com o andar inteiro. Toque numa janela do prédio acima ou escolha aqui.</p>
     </div>
     <div class="plans-grid">
@@ -815,7 +840,7 @@ html.tour-open,html.tour-open body{overflow:hidden}
         <div class="types" id="types"></div>
         <dl class="specs2" id="specs2"></dl>
         <p class="note" id="planNote"></p>
-        <a class="cta" id="cta" href="#reservar">Quero reservar este apartamento</a>
+        <a class="cta" id="cta" href="#reservar" data-spring>Quero reservar este apartamento</a>
         <p class="fine">Disponibilidade e valores sob consulta com a equipe de vendas.</p>
       </div>
     </div>
@@ -826,7 +851,7 @@ html.tour-open,html.tour-open body{overflow:hidden}
   <div class="wrap">
     <div class="sec-head">
       <div class="chap" data-reveal><span class="chap-n">05</span><span class="chap-t">Ambientes</span></div>
-      <h2 id="t-amb" data-reveal>Por dentro do Gran Reserva</h2>
+      <h2 id="t-amb" data-wordsin>Por dentro do Gran Reserva</h2>
       <p data-reveal>Renders oficiais do hall, do apartamento tipo, da mansão suspensa e do rooftop de lazer.</p>
     </div>
   </div>
@@ -840,7 +865,7 @@ html.tour-open,html.tour-open body{overflow:hidden}
   <div class="wrap">
     <div class="sec-head">
       <div class="chap" data-reveal><span class="chap-n">06</span><span class="chap-t">Lazer</span></div>
-      <h2 data-reveal>25 espaços de lazer no rooftop do embasamento</h2>
+      <h2 data-wordsin>25 espaços de lazer no rooftop do embasamento</h2>
       <p>Piscinas, spa, adega, arena esportiva e lounges entre as duas torres. Os números da planta correspondem à lista.</p>
     </div>
     <div class="leisure-grid">
@@ -854,7 +879,7 @@ html.tour-open,html.tour-open body{overflow:hidden}
   <div class="wrap">
     <div class="sec-head">
       <div class="chap" data-reveal><span class="chap-n">07</span><span class="chap-t">Térreo e garagem</span></div>
-      <h2 data-reveal>Térreo com restaurante e portarias independentes</h2>
+      <h2 data-wordsin>Térreo com restaurante e portarias independentes</h2>
       <p>Cada torre tem hall social, clausura, acesso secundário e acesso de garagem próprios.</p>
     </div>
     <div class="leisure-grid">
@@ -876,7 +901,7 @@ html.tour-open,html.tour-open body{overflow:hidden}
   <div class="wrap reserve-grid">
     <div class="sec-head">
       <div class="chap" data-reveal><span class="chap-n">08</span><span class="chap-t">Reserva</span></div>
-      <h2 data-reveal>Reserve seu apartamento</h2>
+      <h2 data-wordsin>Reserve seu apartamento</h2>
       <p>Escolha a torre e a planta. A mensagem já vai pronta para o WhatsApp da equipe de vendas, que responde com disponibilidade, valores e horário de visita ao decorado.</p>
     </div>
     <form class="rform" id="rform" novalidate>
@@ -909,7 +934,7 @@ html.tour-open,html.tour-open body{overflow:hidden}
   <p class="tour-note">Paredes nas medidas das plantas técnicas. Móveis e acabamentos ilustrativos.</p>
 </div>
 
-<a class="wfab" href="#reservar" aria-label="Reservar pelo WhatsApp"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.6.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.3-.4.8-1.4.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.8 11.9 11.9 0 0 0 4.6 4c1.7.7 2.4.8 3.2.7a2.8 2.8 0 0 0 1.8-1.3 2.3 2.3 0 0 0 .2-1.3c-.1-.1-.2-.2-.4-.3Z"/></svg><span>Reservar</span></a>
+<a class="wfab" href="#reservar" data-spring aria-label="Reservar pelo WhatsApp"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.6.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.3-.4.8-1.4.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.8 11.9 11.9 0 0 0 4.6 4c1.7.7 2.4.8 3.2.7a2.8 2.8 0 0 0 1.8-1.3 2.3 2.3 0 0 0 .2-1.3c-.1-.1-.2-.2-.4-.3Z"/></svg><span>Reservar</span></a>
 
 <div class="unit" id="unit" role="dialog" aria-modal="true" aria-label="Apartamento">
   <div class="u-view" id="uView"><div class="u-dots" id="uDots"></div><div class="u-plane" id="uPlane"><div class="u-shadow"></div><i class="u-edge t"></i><i class="u-edge b"></i><i class="u-edge l"></i><i class="u-edge r"></i><img id="uImg" alt=""><div id="uHs"></div></div></div>
@@ -920,7 +945,7 @@ html.tour-open,html.tour-open body{overflow:hidden}
     <dl class="u-specs" id="uSpecs"></dl>
     <div class="u-tipos" id="uTipos"></div>
     <div class="u-amb"><small>Ambientes</small><ul id="uAmb"></ul></div>
-    <div class="u-acts"><button type="button" id="uPlanta">Ver planta</button><button type="button" class="u-res" id="uRes">Quero este</button></div>
+    <div class="u-acts"><button type="button" id="uPlanta">Ver planta</button><button type="button" class="u-res" id="uRes" data-spring>Quero este</button></div>
   </aside>
 </div>
 <div class="imm" id="imm" role="dialog" aria-modal="true" aria-label="Fotos do apartamento">
@@ -2691,6 +2716,55 @@ function grOdo(els, opt){
 }
 
 grOdo(document.querySelectorAll(".hero-facts b"), {now:true, delay:1.2});
+/* ===== efeitos comuns (vitrine Não Codei, adaptados) ===== */
+(() => {
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches, fine = matchMedia("(hover:hover) and (pointer:fine)").matches;
+  const root = document.documentElement;
+  // j09: cursor
+  if (fine && !reduce){
+    const d = document.createElement("div"), r = document.createElement("div"); d.className = "fxc"; r.className = "fxr"; document.body.append(d, r);
+    let mx = 0, my = 0, rx = 0, ry = 0, seen = false, raf = 0;
+    const loop = () => { rx += (mx-rx)*.2; ry += (my-ry)*.2; r.style.transform = `translate3d(${rx}px,${ry}px,0)`;
+      raf = (Math.abs(mx-rx)+Math.abs(my-ry) > .3) ? requestAnimationFrame(loop) : 0; };
+    addEventListener("pointermove", e => {
+      if (e.pointerType !== "mouse") return;
+      mx = e.clientX; my = e.clientY; if (!seen){ seen = true; rx = mx; ry = my; root.classList.add("fx-cur"); }
+      d.style.transform = `translate3d(${mx}px,${my}px,0)`; if (!raf) raf = requestAnimationFrame(loop);
+      const t = e.target, inp = t.closest && t.closest("input:not([type=range]):not([type=checkbox]),textarea,[contenteditable]");
+      r.classList.toggle("txt", !!inp);
+      r.classList.toggle("big", !inp && !!(t.closest && t.closest("a,button,select,label,[role=button],.card,.hp-fl,.room-hs,.u-hs,canvas")));
+      root.classList.remove("fx-off");
+    }, {passive:true});
+    document.addEventListener("mouseleave", () => root.classList.add("fx-off"));
+    addEventListener("blur", () => root.classList.add("fx-off"));
+    // sobre um iframe o mouse some para a página de dentro: esconde aqui para não ficar parado
+    document.addEventListener("mouseover", e => { if (e.target.tagName === "IFRAME") root.classList.add("fx-off"); });
+  }
+  // j14: botões com mola
+  if (fine && !reduce){
+    const spring = el => { let x = 0, y = 0, vx = 0, vy = 0, tx = 0, ty = 0, run = false;
+      const step = () => { vx = (vx + (tx-x)*.12)*.78; vy = (vy + (ty-y)*.12)*.78; x += vx; y += vy; el.style.translate = `${x.toFixed(2)}px ${y.toFixed(2)}px`;
+        if (Math.abs(vx)+Math.abs(vy)+Math.abs(tx-x)+Math.abs(ty-y) > .05) requestAnimationFrame(step); else { run = false; el.style.translate = ""; } };
+      const kick = () => { if (!run){ run = true; requestAnimationFrame(step); } };
+      el.addEventListener("pointermove", e => { const b = el.getBoundingClientRect(); tx = (e.clientX-(b.left+b.width/2))*.22; ty = (e.clientY-(b.top+b.height/2))*.3; kick(); });
+      el.addEventListener("pointerleave", () => { tx = ty = 0; kick(); }); };
+    const hook = () => document.querySelectorAll("[data-spring]").forEach(el => { if (!el.dataset.spr){ el.dataset.spr = 1; spring(el); } });
+    hook(); new MutationObserver(hook).observe(document.body, {childList:true, subtree:true});
+  }
+  // j16: títulos entram palavra por palavra ao aparecer
+  const split = el => { let n = 0; const walk = node => [...node.childNodes].forEach(nd => {
+      if (nd.nodeType === 3){ const f = document.createDocumentFragment(); nd.textContent.split(/(\s+)/).forEach(t => { if (!t) return;
+        if (/^\s+$/.test(t)){ f.appendChild(document.createTextNode(t)); return; } const w = document.createElement("span"); w.className = "w"; w.textContent = t; w.style.transitionDelay = (n++*.07)+"s"; f.appendChild(w); }); nd.replaceWith(f); }
+      else if (nd.nodeType === 1 && nd.tagName !== "BR") walk(nd); }); walk(el); };
+  const wio = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting){ e.target.classList.add("in"); wio.unobserve(e.target); } }), {threshold:.35});
+  document.querySelectorAll("[data-wordsin]").forEach(el => { if (reduce) return; el.classList.add("wi"); split(el); wio.observe(el); });
+  // j07: listas marcadas viram linha do tempo que se desenha com a rolagem
+  const lists = [...document.querySelectorAll("[data-timeline]")];
+  lists.forEach(l => { l.classList.add("tl-list"); const t = document.createElement("i"); t.className = "tl"; t.setAttribute("aria-hidden","true"); l.prepend(t); });
+  const tl = () => lists.forEach(l => { const b = l.getBoundingClientRect(), p = reduce ? 1 : Math.min(1, Math.max(0, (innerHeight*.75 - b.top) / b.height));
+    l.style.setProperty("--p", p.toFixed(3)); l.querySelectorAll(":scope>li").forEach(li => li.classList.toggle("on", reduce || li.getBoundingClientRect().top + 24 < innerHeight*.75)); });
+  if (lists.length){ addEventListener("scroll", tl, {passive:true}); addEventListener("resize", tl); tl(); setInterval(tl, 600); }
+})();
 </script>
 
 </body>

@@ -977,10 +977,11 @@ body{margin:0;background:transparent;letter-spacing:-.005em}
     <div class="sec-head">
       <div class="chap" data-reveal><span class="chap-n">09</span><span class="chap-t">Reserva</span></div>
       <h2 data-wordsin>Reserve seu apartamento</h2>
-      <p>Escolha a torre e a planta. A mensagem já vai pronta para o WhatsApp da equipe de vendas, que responde com disponibilidade, valores e horário de visita ao decorado.</p>
+      <p>Escolha a torre e a planta e deixe seu contato. A equipe de vendas responde com disponibilidade, valores e horário de visita ao decorado.</p>
     </div>
     <form class="rform" id="rform" novalidate>
       <label>Seu nome<input id="rNome" autocomplete="name" placeholder="Como devemos te chamar"></label>
+      <label>Celular<input id="rTel" type="tel" autocomplete="tel" inputmode="tel" placeholder="(66) 9 0000-0000"></label>
       <div class="rrow">
         <label>Torre<select id="rTorre"><option>Torre A</option><option>Torre B</option><option>Tanto faz</option></select></label>
         <label>Planta<select id="rTipo"><option value="02">Tipo 02 · 219,75 m² · 4 suítes</option><option value="01">Tipo 01 · 201 m² · 3 suítes</option><option value="U">Unificado · 420,75 m² · 5 suítes</option></select></label>
@@ -990,8 +991,8 @@ body{margin:0;background:transparent;letter-spacing:-.005em}
         <label class="chip2"><input type="radio" name="rQuero" value="visitar o decorado">Visitar o decorado</label>
         <label class="chip2"><input type="radio" name="rQuero" value="receber a tabela de valores">Receber a tabela</label>
       </fieldset>
-      <button class="cta" type="submit">Enviar pelo WhatsApp</button>
-      <p class="fine" id="rFine">Abre o WhatsApp com a mensagem pronta. Nada é enviado sem você confirmar lá.</p>
+      <button class="cta" type="submit">Enviar</button>
+      <p class="fine" id="rFine">A equipe da Haacke entra em contato pelo celular informado.</p>
     </form>
   </div>
 </section>
@@ -1009,7 +1010,6 @@ body{margin:0;background:transparent;letter-spacing:-.005em}
   <p class="tour-note">Paredes nas medidas das plantas técnicas. Móveis e acabamentos ilustrativos.</p>
 </div>
 
-<a class="wfab" href="#reservar" data-spring aria-label="Reservar pelo WhatsApp"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.6.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.3-.4.8-1.4.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.8 11.9 11.9 0 0 0 4.6 4c1.7.7 2.4.8 3.2.7a2.8 2.8 0 0 0 1.8-1.3 2.3 2.3 0 0 0 .2-1.3c-.1-.1-.2-.2-.4-.3Z"/></svg><span>Reservar</span></a>
 
 <div class="unit" id="unit" role="dialog" aria-modal="true" aria-label="Apartamento">
   <div class="u-view" id="uView"><div class="u-dots" id="uDots"></div><div class="u-plane" id="uPlane"><div class="u-shadow"></div><i class="u-edge t"></i><i class="u-edge b"></i><i class="u-edge l"></i><i class="u-edge r"></i><img id="uImg" alt=""><div id="uHs"></div></div></div>
@@ -2756,17 +2756,14 @@ try { insideHome = window.parent !== window; } catch(e){ insideHome = true; }
 backHome.hidden = !insideHome;
 backHome.addEventListener("click", e => { e.preventDefault(); window.parent.postMessage("haacke:voltar", "*"); });
 
-/* ---------- reserva pelo WhatsApp ---------- */
-const WHATSAPP = "5566999729973"; // escritório Haacke em Sorriso (site oficial)
+/* ---------- reserva: confirma na tela ---------- */
 document.getElementById("rform").addEventListener("submit", e => {
   e.preventDefault();
-  const nome = document.getElementById("rNome").value.trim();
-  const torre = document.getElementById("rTorre").value, tipo = UNIT_TYPES[document.getElementById("rTipo").value];
-  const quero = (document.querySelector('input[name="rQuero"]:checked')||{}).value || "reservar uma unidade";
-  const txt = `Olá! ${nome ? "Sou "+nome+" e " : ""}quero ${quero} no Gran Reserva Residence: ${tipo.nome} (${tipo.area}, ${tipo.suites} suítes), ${torre}.`;
-  const url = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(txt)}`;
-  const a = document.createElement("a"); a.href = url; a.target = "_blank"; a.rel = "noopener"; document.body.appendChild(a); a.click(); a.remove();
-  document.getElementById("rFine").textContent = "Abrindo o WhatsApp com a sua mensagem. Se não abrir, a mensagem é: " + txt;
+  const nome = document.getElementById("rNome").value.trim(), tel = document.getElementById("rTel").value.replace(/\D/g,"");
+  const fine = document.getElementById("rFine");
+  if (tel.length < 10){ fine.textContent = "Informe um celular com DDD para a equipe retornar."; document.getElementById("rTel").focus(); return; }
+  fine.textContent = `Obrigado${nome ? ", " + nome.split(" ")[0] : ""}! Recebemos seu interesse e a equipe da Haacke retorna em breve.`;
+  e.target.querySelector('button[type="submit"]').disabled = true;
 });
 })();
 

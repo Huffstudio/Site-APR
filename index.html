@@ -372,7 +372,7 @@ html.fx-off .fxc,html.fx-off .fxr{opacity:0!important}
     <div>
       <div class="kicker">Contato</div>
       <h2>Quer conhecer de perto?</h2>
-      <p>Conte qual empreendimento te interessa. A mensagem vai pronta para o WhatsApp da equipe comercial.</p>
+      <p>Conte qual empreendimento te interessa e deixe seu contato. A equipe comercial retorna em breve.</p>
       <div class="offices">
         <div><b>Balneário Camboriú, SC</b><span>Rua 1.440, 100, Centro<br>(47) 3366-3843 · (47) 9 8826-7925</span></div>
         <div><b>Sinop, MT</b><span>Av. das Figueiras, 6722, Aquarela das Artes<br>(66) 3211-1953</span></div>
@@ -383,10 +383,11 @@ html.fx-off .fxc,html.fx-off .fxr{opacity:0!important}
     </div>
     <form class="form" id="cform" novalidate>
       <label>Seu nome<input id="cNome" autocomplete="name" placeholder="Como devemos te chamar"></label>
+      <label>Celular<input id="cTel" type="tel" autocomplete="tel" inputmode="tel" placeholder="(66) 9 0000-0000"></label>
       <label>Empreendimento<select id="cEmp"><option>Gran Reserva Residence</option><option>Hauss Residenz Club</option><option>WTC Sinop · Sky 360</option><option>Splendido</option><option>Spring Valley</option><option>Collina Di Roma</option><option>Symphony</option><option>Outro / quero conhecer</option></select></label>
       <label>Mensagem<textarea id="cMsg" placeholder="Ex.: quero agendar uma visita ao decorado"></textarea></label>
-      <button class="btn solid" type="submit">Enviar pelo WhatsApp</button>
-      <p class="fine" id="cFine">Abre o WhatsApp com a mensagem pronta. Nada é enviado sem você confirmar lá.</p>
+      <button class="btn solid" type="submit">Enviar</button>
+      <p class="fine" id="cFine">A equipe da Haacke entra em contato pelo celular informado.</p>
     </form>
   </div>
 </section>
@@ -401,7 +402,6 @@ html.fx-off .fxc,html.fx-off .fxr{opacity:0!important}
 
 <script>
 (() => {
-  const WHATSAPP = "5547988267925"; // comercial Haacke (do site oficial)
   const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
   const bar = document.getElementById("bar"), hero = document.getElementById("heroImg");
   const onScroll = () => {
@@ -425,7 +425,6 @@ html.fx-off .fxc,html.fx-off .fxr{opacity:0!important}
     const f = box.firstChild, inp = f.querySelector("input"); inp.focus(); type(inp, "Digite seu e-mail para receber os lançamentos");
     f.onsubmit = e => { e.preventDefault(); if (!/^\S+@\S+\.\S+$/.test(inp.value)){ inp.focus(); return; }
       const mail = inp.value; f.querySelector("button").innerHTML = check; inp.value = ""; inp.disabled = true; type(inp, "Pronto! Você vai receber as novidades por e-mail");
-      if (WHATSAPP) window.open(`https://wa.me/${WHATSAPP}?text=${encodeURIComponent("Quero receber os lançamentos da Haacke. Meu e-mail: " + mail)}`, "_blank");
       setTimeout(showBtn, 4000); };
   }
   showBtn();
@@ -485,14 +484,13 @@ html.fx-off .fxc,html.fx-off .fxr{opacity:0!important}
   addEventListener("popstate", route); addEventListener("hashchange", route);
   if (SRC[location.hash.slice(1)]) { document.getElementById("empreendimentos").scrollIntoView(); setTimeout(route, 50); }
 
-  // contato pelo WhatsApp
+  // contato: confirma na tela
   document.getElementById("cform").addEventListener("submit", e => {
     e.preventDefault();
-    const n = document.getElementById("cNome").value.trim(), emp = document.getElementById("cEmp").value, m = document.getElementById("cMsg").value.trim();
-    const txt = `Olá! ${n ? "Sou " + n + ". " : ""}Tenho interesse em: ${emp}.${m ? " " + m : ""}`;
-    const a = document.createElement("a"); a.href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(txt)}`; a.target = "_blank"; a.rel = "noopener";
-    document.body.appendChild(a); a.click(); a.remove();
-    document.getElementById("cFine").textContent = "Abrindo o WhatsApp. Se não abrir, a mensagem é: " + txt;
+    const n = document.getElementById("cNome").value.trim(), tel = document.getElementById("cTel").value.replace(/\D/g,""), fine = document.getElementById("cFine");
+    if (tel.length < 10){ fine.textContent = "Informe um celular com DDD para a equipe retornar."; document.getElementById("cTel").focus(); return; }
+    fine.textContent = `Obrigado${n ? ", " + n.split(" ")[0] : ""}! Recebemos sua mensagem e a equipe comercial retorna em breve.`;
+    e.target.querySelector('button[type="submit"]').disabled = true;
   });
 })();
 /* odômetro (j18): troca os dígitos por fitas 0–9 e gira até o valor quando aparece na tela */

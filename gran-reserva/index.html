@@ -63,6 +63,14 @@ h2 em,h1 em{font-style:normal;color:inherit}
   -webkit-mask-image:radial-gradient(70% 90% at 65% 100%,#000,transparent 75%);mask-image:radial-gradient(70% 90% at 65% 100%,#000,transparent 75%)}
 .stage::after{content:none}
 @supports (height:1svh){.stage{--ext:18svh}}
+.stage{--hk:1.18;--drop:-.03}
+@media (max-aspect-ratio:1/1){
+  /* celular: prédio desce para abaixo do texto; o palco cresce para a base continuar inteira */
+  .stage{--hk:1.36;--drop:.2;--ext:36vh;height:136vh;height:136svh}
+  .hp-bg{opacity:0}
+  .hp-plate.p{-webkit-mask-image:linear-gradient(180deg,transparent 0,#000 9%,#000 80%,transparent 100%);mask-image:linear-gradient(180deg,transparent 0,#000 9%,#000 80%,transparent 100%)}
+  @supports (height:1svh){.stage{--ext:36svh}}
+}
 .tower3d{position:absolute;right:0;top:0;bottom:var(--ext);width:62%;cursor:grab;touch-action:pan-y;
   -webkit-mask-image:linear-gradient(90deg,transparent 0,#000 16%,#000 90%,transparent 100%);mask-image:linear-gradient(90deg,transparent 0,#000 16%,#000 90%,transparent 100%)}
 .tower3d:active{cursor:grabbing}
@@ -821,7 +829,7 @@ body{margin:0;background:transparent;letter-spacing:-.005em}
       </div>
     </div>
     <div class="scroll-hint" id="hint">Role<i></i></div>
-    <div class="drag-hint" id="dragHint">Passe o mouse num andar · clique para entrar no apartamento</div>
+    <div class="drag-hint" id="dragHint">Passe o mouse num andar · clique para entrar no apartamento</div><script>if(matchMedia("(pointer:coarse)").matches)document.getElementById("dragHint").textContent="Toque num andar para entrar no apartamento"</script>
     <div class="mirror" id="mirror">
       <div class="mirror-row"><div class="hero-views" role="group" aria-label="Vista do prédio" hidden><button type="button" data-v="foto" aria-pressed="true">Fachada</button><button type="button" data-v="3d" aria-pressed="false">Modelo 3D</button></div>
       <button type="button" id="mirrorBtn" aria-pressed="false" data-spring><i></i>Espelho de vendas</button></div>
@@ -2182,7 +2190,8 @@ function placeCity(){
   const bw = box0.clientWidth, bh = box0.clientHeight, por = bw/bh < 1;
   plate.classList.toggle("p", por);
   const W = por ? 1080 : 1920, H = por ? 1920 : 1080;
-  const vh = bh/1.18, sc = Math.max(bw/W, vh/H); plate.style.top = (vh*.5 - vh*.03) + "px"; plate.style.transform = `translate(-50%,-50%) scale(${sc})`;
+  const cs = getComputedStyle(box0.closest(".stage")), hk = parseFloat(cs.getPropertyValue("--hk")) || 1.18, drop = parseFloat(cs.getPropertyValue("--drop")) || 0;
+  const vh = bh/hk, sc = Math.max(bw/W, vh/H); plate.style.top = (vh*.5 + vh*drop) + "px"; plate.style.transform = `translate(-50%,-50%) scale(${sc})`;
   // prédio da fachada dentro da placa
   const F = por ? {l:0,t:480,w:1080,h:1440} : {l:870,t:40,w:780,h:1040};
   const P = {cx:F.l+F.w*.506, cy:F.t+F.h*.505, h:F.h*(2330-270)/2576};
@@ -2247,7 +2256,7 @@ document.getElementById("hpCity").addEventListener("load", placeCity);
     const v3 = b.dataset.v === "3d";
     if (v3 && !has3d){ has3d = init3D(); if (!has3d){ b.disabled = true; return; } if (mb.getAttribute("aria-pressed") === "true") window.grStatusMode(true); }
     views.forEach(x => x.setAttribute("aria-pressed", x === b)); stageEl.classList.toggle("mode3d", v3);
-    hintEl.textContent = v3 ? "Toque numa janela para ver o apartamento · arraste para girar" : "Passe o mouse num andar · clique para entrar no apartamento";
+    hintEl.textContent = v3 ? "Toque numa janela para ver o apartamento · arraste para girar" : (matchMedia("(pointer:coarse)").matches ? "Toque num andar para entrar no apartamento" : "Passe o mouse num andar · clique para entrar no apartamento");
     window.dispatchEvent(new Event("resize"));
   });
 }

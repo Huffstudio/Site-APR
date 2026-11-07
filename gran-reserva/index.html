@@ -717,7 +717,8 @@ html.fx-off .fxc,html.fx-off .fxr{opacity:0!important}
 /* ===== visual da Haacke aplicado ao Gran Reserva: arte líquida fixa ao fundo, menu de vidro, tipografia Instrument Serif + Inter ===== */
 :root{--display:"Instrument Serif", Georgia, serif; --body:"Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
   --gold:#EBB08C; --amber:#EBB08C; --amber-soft:rgba(235,176,140,.10); --wine:#A9452B; --wine-hi:#C5583A}
-html{background:#0d0709}
+html{background:#0d0709;overscroll-behavior-y:none}
+body{overscroll-behavior-y:none}
 body{margin:0;background:transparent;letter-spacing:-.005em}
 ::selection{background:#F2C3A6;color:#120A0C}
 .fx-bg{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none;background:#0d0709}

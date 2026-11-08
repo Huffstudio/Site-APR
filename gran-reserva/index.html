@@ -553,6 +553,8 @@ html.tour-open,html.tour-open body{overflow:hidden}
 .chap-t{font-size:13px;letter-spacing:.14em;color:var(--gold);padding-bottom:6px}
 .hero-copy h1 .w{display:inline-block;overflow:hidden;vertical-align:top;padding-bottom:.08em;margin-bottom:-.08em}
 .hero-copy h1 .w>span{display:inline-block}
+/* sombra no título inteiro, não em cada palavra (a máscara de cada palavra recortava a sombra em caixinhas) */
+.hero-copy h1,.stage.mode3d .hero-copy h1{text-shadow:none;filter:drop-shadow(0 2px 14px rgba(5,10,16,.55))}
 /* 01 conceito */
 .conceito{padding-block:120px 96px;background:var(--night)}
 .statement{font-family:var(--display);font-size:clamp(26px,3.9vw,50px);line-height:1.18;letter-spacing:-.01em;max-width:24ch;margin:28px 0 0;text-wrap:balance}

@@ -312,6 +312,12 @@ footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
 .pstage.dragging{cursor:grabbing}
 .pmodel{position:relative;transform-style:preserve-3d;transition:transform .8s cubic-bezier(.2,.7,.2,1),opacity .5s ease;max-width:100%}
 .pstage.dragging .pmodel{transition:none}
+.plan-ghost{position:absolute!important;margin:0!important;max-height:none!important;max-width:none!important;pointer-events:none;z-index:2;transition:opacity .75s ease,filter .75s ease,transform .75s ease}
+.plan-ghost.out{opacity:0;filter:blur(6px);transform:scale(1.02)}
+@keyframes planIn{from{opacity:0;filter:blur(6px);transform:scale(.985)}to{opacity:1;filter:none;transform:none}}
+#planImg.plan-in{animation:planIn .8s cubic-bezier(.2,.7,.2,1) .08s both}
+@keyframes swapIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.swap-in{animation:swapIn .5s ease both}
 .pmodel img{position:relative;max-height:min(66vh,600px);width:auto;max-width:100%;margin:auto;-webkit-user-drag:none}
 .pstage.is3d .pmodel img{filter:drop-shadow(0 30px 30px rgba(20,24,30,.35))}
 .pmodel::before{content:"";position:absolute;inset:0;background:#b9b3a8;border-radius:2px;transform:translateZ(-12px);opacity:0;transition:opacity .4s}
@@ -3049,7 +3055,23 @@ function renderPlans(){
   document.querySelectorAll(".type").forEach(b => b.onclick = () => { selTipo = b.dataset.tipo; renderPlans(); });
   const u = UNIT_TYPES[selTipo];
   const src = selTipo==="U" ? IMGS.U : IMGS[selTorre][selTipo];
-  if (planImg.getAttribute("src") !== src){ planImg.src = src; pRooms(selTipo==="U" ? "U" : selTorre+selTipo); }
+  if (planImg.getAttribute("src") !== src){
+    // troca com fusão: a planta antiga some por cima enquanto a nova surge
+    const old = planImg.getAttribute("src") && !matchMedia("(prefers-reduced-motion: reduce)").matches ? planImg.cloneNode() : null;
+    if (old){
+      const r = planImg.getBoundingClientRect(), pr = pmodel.getBoundingClientRect();
+      old.removeAttribute("id"); old.className = "plan-ghost"; old.alt = "";
+      Object.assign(old.style, {left:(r.left-pr.left)+"px", top:(r.top-pr.top)+"px", width:r.width+"px", height:r.height+"px"});
+      pmodel.appendChild(old);
+      requestAnimationFrame(() => old.classList.add("out"));
+      setTimeout(() => old.remove(), 850);
+      planImg.classList.remove("plan-in"); void planImg.offsetWidth;
+    }
+    planImg.src = src; pRooms(selTipo==="U" ? "U" : selTorre+selTipo);
+    if (old){ const go = () => planImg.classList.add("plan-in"); planImg.complete ? go() : planImg.addEventListener("load", go, {once:true}); }
+    const side = document.querySelectorAll("#specs2, #planNote, #planCap");
+    side.forEach(el => { el.classList.remove("swap-in"); void el.offsetWidth; el.classList.add("swap-in"); });
+  }
   planImg.alt = `Planta humanizada ${u.nome}, Torre ${selTorre}`;
   const tb = pstage.querySelector(".pm-tour"); if (tb) tb.hidden = !(typeof TOUR_DATA !== "undefined" && TOUR_DATA[selTorre+selTipo]);
   planCap.textContent = selTipo==="U" ? `${u.nome} · ${u.area} · ${u.suites} suítes · planta oficial da Torre B` : `Torre ${selTorre} · ${u.nome} · ${u.area} · planta oficial`;

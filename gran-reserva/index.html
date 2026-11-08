@@ -2939,7 +2939,7 @@ float field(vec2 p,float t){
 void main(){
   vec2 uv=gl_FragCoord.xy/R;
   vec2 p=(gl_FragCoord.xy-.5*R)/max(R.x,R.y)*1.6;
-  float t=T*.09;
+  float t=T*.04;
   float f=field(p,t),e=.0045;
   float fx=field(p+vec2(e,0.),t)-f, fy=field(p+vec2(0.,e),t)-f;
   vec3 N=normalize(vec3(-fx/e*.084,-fy/e*.084,1.)*vec3(1.,1.,1.)); N=normalize(vec3(clamp(N.xy,-.85,.85),N.z));

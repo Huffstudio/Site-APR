@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex"><title>Ver no celular</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#140a0c;--fg:#f3e6e1;--mut:#b9a29c;--line:rgba(240,205,195,.16);--gold:#d6a764}
+*{box-sizing:border-box}html,body{height:100%}
+body{margin:0;background:radial-gradient(90% 70% at 50% 30%,#2a1216,#0d0608);color:var(--fg);font:14px Inter,system-ui,sans-serif;display:flex;flex-direction:column;align-items:center;gap:18px;padding:22px 16px 30px;min-height:100vh}
+h1{font:400 30px "Instrument Serif",Georgia,serif;margin:0}
+.bar{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;align-items:center}
+.seg{display:inline-flex;padding:3px;border-radius:999px;border:1px solid var(--line);background:rgba(0,0,0,.25)}
+.seg button{border:0;background:none;color:var(--mut);font:600 13px Inter,sans-serif;padding:8px 14px;border-radius:999px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--fg);color:#2b1a1d}
+.btn{border:1px solid var(--line);background:rgba(0,0,0,.25);color:var(--fg);font:600 13px Inter,sans-serif;padding:9px 14px;border-radius:999px;cursor:pointer}
+.btn:hover{border-color:var(--gold)}
+.stage{flex:1;display:grid;place-items:center;width:100%}
+.phone{position:relative;background:#0b0b0d;border-radius:var(--r);padding:var(--b);box-shadow:0 0 0 2px #2c2c30,0 0 0 4px #121214,0 40px 90px rgba(0,0,0,.6);transform-origin:top center}
+.phone iframe{display:block;border:0;border-radius:calc(var(--r) - var(--b));background:#000;width:var(--w);height:var(--h)}
+.island{position:absolute;left:50%;top:calc(var(--b) + 10px);transform:translateX(-50%);width:110px;height:32px;border-radius:20px;background:#000;z-index:2;pointer-events:none}
+.phone.land .island{left:calc(var(--b) + 10px);top:50%;transform:translateY(-50%);width:32px;height:110px}
+.phone.android .island{width:12px;height:12px;border-radius:50%}
+.phone.android.land .island{width:12px;height:12px}
+small{color:var(--mut);text-align:center;max-width:520px;line-height:1.5}
+</style></head><body>
+<h1>Ver no celular</h1>
+<div class="bar">
+  <div class="seg" id="site"><button data-v="../" aria-pressed="true">Haacke</button><button data-v="../gran-reserva/" aria-pressed="false">Gran Reserva</button></div>
+  <div class="seg" id="dev"><button data-v="iphone" aria-pressed="true">iPhone</button><button data-v="pro" aria-pressed="false">iPhone Pro Max</button><button data-v="android" aria-pressed="false">Android</button></div>
+  <button class="btn" id="rot">Girar</button><button class="btn" id="reload">Recarregar</button>
+</div>
+<div class="stage" id="stage"><div class="phone" id="phone"><i class="island"></i><iframe id="fr" title="Site no celular" src="../"></iframe></div></div>
+<small>O site roda dentro do celular de verdade: dá pra rolar, tocar e abrir tudo com o mouse. O 3D aqui usa a placa de vídeo do computador, então no celular de verdade pode ser um pouco mais pesado.</small>
+<script>
+const D={iphone:{w:390,h:844,r:54,b:12},pro:{w:430,h:932,r:58,b:12},android:{w:412,h:915,r:36,b:10}};
+let dev="iphone",land=false;const ph=document.getElementById("phone"),fr=document.getElementById("fr");
+function fit(){const d=D[dev],w=land?d.h:d.w,h=land?d.w:d.h;
+  ph.style.setProperty("--w",w+"px");ph.style.setProperty("--h",h+"px");ph.style.setProperty("--r",d.r+"px");ph.style.setProperty("--b",d.b+"px");
+  ph.classList.toggle("land",land);ph.classList.toggle("android",dev==="android");
+  const avail=innerHeight-150,availW=innerWidth-40,s=Math.min(1,avail/(h+2*d.b),availW/(w+2*d.b));ph.style.transform=`scale(${s})`;
+  document.getElementById("stage").style.height=((h+2*d.b)*s+10)+"px";}
+function seg(id,cb){document.querySelectorAll("#"+id+" button").forEach(b=>b.onclick=()=>{document.querySelectorAll("#"+id+" button").forEach(x=>x.setAttribute("aria-pressed",x===b));cb(b.dataset.v);});}
+seg("site",v=>fr.src=v);seg("dev",v=>{dev=v;fit();});
+document.getElementById("rot").onclick=()=>{land=!land;fit();};
+document.getElementById("reload").onclick=()=>{fr.src=fr.src;};
+addEventListener("resize",fit);fit();
+</script></body></html>

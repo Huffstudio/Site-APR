@@ -648,6 +648,58 @@ html.tour-open,html.tour-open body{overflow:hidden}
 .feat li{border-top:1px solid var(--line);padding-top:12px;font-size:14px;color:var(--muted)}
 .feat b{display:block;color:var(--fg);font-weight:500;margin-bottom:2px}
 .media.fach{aspect-ratio:3/4;max-height:720px}
+/* ===== Passeio pelos ambientes: fotos em tela cheia com movimento lento de câmera ===== */
+.ptour{padding-block:110px 90px;border-top:1px solid var(--line)}
+.pt-head{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;flex-wrap:wrap;margin-bottom:28px}
+.pt-head .sec-head{margin-bottom:0}
+.pt-tabs{display:inline-flex;gap:2px;padding:3px;border-radius:999px;background:rgba(18,10,12,.45);border:1px solid var(--line)}
+.pt-tabs button{border:0;background:none;color:var(--muted);font:600 13px var(--body);letter-spacing:.04em;padding:9px 18px;border-radius:999px;cursor:pointer;transition:background .3s,color .3s}
+.pt-tabs button[aria-selected="true"]{background:var(--fg);color:#2b1a1d}
+.pt-stage{position:relative;height:min(86vh,860px);height:min(86svh,860px);min-height:460px;overflow:hidden;background:#0d0709;touch-action:pan-y;user-select:none;-webkit-user-select:none}
+.pt-slide{position:absolute;inset:0;opacity:0;transition:opacity 1.2s ease;overflow:hidden}
+.pt-slide.on{opacity:1}
+.pt-bg{position:absolute;inset:-6%;width:112%;height:112%;object-fit:cover;filter:blur(28px) brightness(.45) saturate(1.1);display:none}
+.pt-slide.contain .pt-bg{display:block}
+.pt-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform-origin:50% 50%;will-change:transform}
+.pt-slide.contain .pt-img{object-fit:contain}
+.pt-shade{position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(13,7,9,.55) 0%,transparent 22%,transparent 62%,rgba(13,7,9,.78) 100%)}
+.pt-title{position:absolute;left:max(24px,calc((100% - 1200px)/2 + 16px));top:28px;display:grid;gap:4px;pointer-events:none;max-width:calc(100% - 48px)}
+.pt-k{font:500 12px var(--body);letter-spacing:.22em;text-transform:uppercase;color:var(--gold);opacity:0;transform:translateY(8px);transition:opacity .7s ease,transform .7s ease}
+.pt-title b{font-family:var(--display);font-weight:400;font-size:clamp(34px,5vw,64px);line-height:1.02;color:#FFF4EC;text-shadow:0 2px 24px rgba(0,0,0,.45);opacity:0;transform:translateY(16px);filter:blur(6px);transition:opacity .9s ease .08s,transform .9s cubic-bezier(.2,.7,.2,1) .08s,filter .9s ease .08s}
+.pt-title.show .pt-k,.pt-title.show b{opacity:1;transform:none;filter:none}
+.pt-mini{position:absolute;right:max(20px,calc((100% - 1200px)/2 + 16px));top:24px;margin:0;width:150px;border-radius:6px;overflow:hidden;border:1px solid rgba(240,205,195,.22);background:rgba(13,7,9,.55);box-shadow:0 10px 30px rgba(0,0,0,.35);transition:opacity .4s}
+.pt-mini img{display:block;width:100%;height:auto;opacity:.92}
+.pt-mini.lazer{width:190px}
+.pt-mini.off{opacity:0}
+.pt-dot{position:absolute;width:12px;height:12px;margin:-6px 0 0 -6px;border-radius:50%;background:var(--gold);box-shadow:0 0 0 0 rgba(214,167,100,.7);transition:left .9s cubic-bezier(.2,.7,.2,1),top .9s cubic-bezier(.2,.7,.2,1),opacity .4s;animation:ptPulse 1.8s ease-out infinite}
+.pt-dot.off{opacity:0}
+@keyframes ptPulse{0%{box-shadow:0 0 0 0 rgba(214,167,100,.75)}70%{box-shadow:0 0 0 12px rgba(214,167,100,0)}100%{box-shadow:0 0 0 0 rgba(214,167,100,0)}}
+.pt-ctrl{position:absolute;left:max(20px,calc((100% - 1200px)/2 + 16px));right:max(20px,calc((100% - 1200px)/2 + 16px));bottom:22px;display:flex;align-items:center;gap:10px}
+.pt-btn{flex:none;width:42px;height:42px;border-radius:50%;border:1px solid rgba(255,236,226,.28);background:rgba(18,10,12,.4);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);color:#FFF4EC;display:grid;place-items:center;cursor:pointer;transition:background .25s,border-color .25s}
+.pt-btn:hover{background:rgba(214,167,100,.22);border-color:var(--gold)}
+.pt-btn svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.pt-play .i-play{display:none;fill:currentColor;stroke:none}
+.pt-play.paused .i-play{display:block}.pt-play.paused .i-pause{display:none}
+.pt-prog{flex:1;height:2px;background:rgba(255,236,226,.2);border-radius:2px;overflow:hidden;margin-left:8px}
+.pt-prog i{display:block;height:100%;width:100%;background:var(--gold);transform-origin:left;transform:scaleX(0)}
+.pt-count{font:500 12px var(--body);color:rgba(255,236,226,.75);font-variant-numeric:tabular-nums;min-width:52px;text-align:right}
+.pt-rooms{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.pt-rooms button{border:1px solid var(--line);background:rgba(18,10,12,.35);color:var(--muted);font:500 13px var(--body);padding:8px 14px;border-radius:999px;cursor:pointer;transition:color .25s,border-color .25s,background .25s}
+.pt-rooms button:hover{color:var(--fg);border-color:rgba(240,205,195,.35)}
+.pt-rooms button[aria-current="true"]{color:#2b1a1d;background:var(--gold);border-color:var(--gold)}
+@media (max-width:760px){
+  .ptour{padding-block:80px 64px}
+  .pt-stage{height:100vh;height:100svh;min-height:0}
+  .pt-title{left:18px;top:auto;bottom:96px}
+  .pt-mini{width:92px;right:14px;top:auto;bottom:96px}.pt-mini.lazer{width:120px}
+  .pt-title{max-width:calc(100% - 150px)}
+  .pt-ctrl{left:14px;right:14px;bottom:calc(18px + env(safe-area-inset-bottom,0px));gap:8px}
+  .pt-btn{width:52px;height:52px}.pt-btn svg{width:22px;height:22px}
+  .pt-count{display:none}
+  .pt-rooms{flex-wrap:nowrap;overflow-x:auto;margin-inline:-16px;padding-inline:16px;scrollbar-width:none}
+  .pt-rooms::-webkit-scrollbar{display:none}
+  .pt-rooms button{flex:none;padding:11px 16px;font-size:14px}
+}
 .lz-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:28px 22px;margin-top:64px}
 .lz-card{margin:0;min-width:0}
 .lz-ph{aspect-ratio:16/10;overflow:hidden;border-radius:4px;background:var(--panel);border:1px solid var(--line)}
@@ -1615,6 +1667,33 @@ svg.leaflet-image-layer.leaflet-interactive path {
   </div>
 </section>
 
+<section class="ptour" id="passeio" aria-labelledby="t-ptour">
+  <div class="wrap pt-head">
+    <div class="sec-head">
+      <h2 id="t-ptour" data-wordsin>Passeio pelos ambientes</h2>
+      <p data-reveal>Um passeio guiado, foto a foto, pela ordem em que você caminharia pelo apartamento e pelo lazer.</p>
+    </div>
+    <div class="pt-tabs" role="tablist" aria-label="Roteiro">
+      <button role="tab" data-k="apto" aria-selected="true">Apartamento</button><button role="tab" data-k="lazer" aria-selected="false">Lazer</button>
+    </div>
+  </div>
+  <div class="pt-stage" id="ptStage" aria-roledescription="passeio automático" aria-live="off">
+    <div class="pt-slide" data-i="0"><img class="pt-bg" alt="" aria-hidden="true"><img class="pt-img" alt=""></div>
+    <div class="pt-slide" data-i="1"><img class="pt-bg" alt="" aria-hidden="true"><img class="pt-img" alt=""></div>
+    <div class="pt-shade"></div>
+    <div class="pt-title" id="ptTitle" aria-live="polite"><span class="pt-k" id="ptKicker"></span><b id="ptName"></b></div>
+    <figure class="pt-mini" id="ptMini" aria-hidden="true"><img id="ptPlan" alt=""><i class="pt-dot" id="ptDot"></i></figure>
+    <div class="pt-ctrl">
+      <button type="button" class="pt-btn" id="ptPrev" aria-label="Foto anterior"><svg viewBox="0 0 24 24"><path d="M15 5 8 12l7 7"/></svg></button>
+      <button type="button" class="pt-btn pt-play" id="ptPlay" aria-label="Pausar passeio"><svg class="i-pause" viewBox="0 0 24 24"><path d="M9 5v14M15 5v14"/></svg><svg class="i-play" viewBox="0 0 24 24"><path d="M8 5l11 7-11 7z"/></svg></button>
+      <button type="button" class="pt-btn" id="ptNext" aria-label="Próxima foto"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
+      <div class="pt-prog" aria-hidden="true"><i id="ptBar"></i></div>
+      <span class="pt-count" id="ptCount"></span>
+    </div>
+  </div>
+  <div class="wrap"><div class="pt-rooms" id="ptRooms" role="list" aria-label="Ambientes do roteiro"></div></div>
+</section>
+
 <section class="amb2" id="ambientes" aria-labelledby="t-amb">
   <div class="wrap">
     <div class="sec-head">
@@ -2218,6 +2297,112 @@ const ARQUITETO = {texto:"Um empreendimento reservado para quem entende que o ve
 
 (function chapters(){
   document.querySelectorAll("[data-render-img]").forEach(img=>{ const r=RENDERS[img.dataset.renderImg]; if(r) img.src=r; else img.closest("figure").remove(); });
+/* ===== Passeio pelos ambientes (roteiros e posições na planta vindos do tour do Gran Reserva) ===== */
+(() => {
+  const st = document.getElementById("ptStage"); if (!st) return;
+  const P = n => "tour/" + n + ".jpg";
+  const FLOORS = {
+    apto:{label:"Apartamento", plan:"planta-tipo-1-e-2-torre-a", rooms:[
+      {name:"Hall e oratório", x:37, y:50, photos:["hall-de-entrada-oratorio"]},
+      {name:"Living", x:33, y:66, photos:["living-1","living-2","living-3","living-4","living-5","living-sala-de-tv"]},
+      {name:"Suíte moça", x:40, y:79, photos:["suite-moca-1","suite-moca-2","suite-moca-3"]},
+      {name:"Banho moça", x:35, y:90, photos:["banheiro-suite-moca"]},
+      {name:"Suíte master", x:78, y:86, photos:["suite-master-1","suite-master-2","suite-master-3","suite-master-4"]},
+      {name:"Closet master", x:66, y:84, photos:["closet-suite-master"]},
+      {name:"Banho master", x:84, y:94, photos:["banheiro-suite-master-1","banheiro-suite-master-2"]},
+      {name:"Suíte rapaz", x:80, y:15, photos:["suite-rapaz"]},
+      {name:"Banho rapaz", x:84, y:6, photos:["banheiro-suite-rapaz"]},
+      {name:"Mansão suspensa", x:null, photos:["mansao-suspensa-living"]}
+    ]},
+    lazer:{label:"Lazer", plan:"planta-lazer", rooms:[
+      {name:"Piscina", x:50, y:86, photos:["piscina-1","piscina-2","piscina-3","piscina-4","piscina-5","piscina-6"]},
+      {name:"Quiosque", x:92, y:66, photos:["quiosque-2-1","quiosque-2-2"]},
+      {name:"Spa", x:92, y:45, photos:["spa-1","spa-2","spa-3","spa-4","spa-5"]},
+      {name:"Salão de pizza", x:73, y:58, photos:["salao-pizza-1","salao-pizza-2","salao-pizza-3"]},
+      {name:"Confraria", x:54, y:47, photos:["confraria"]},
+      {name:"Food market", x:45, y:61, photos:["food-market"]},
+      {name:"Espaço gourmet", x:20, y:56, photos:["gourmet"]},
+      {name:"Brinquedoteca", x:20, y:24, photos:["brinquedoteca"]},
+      {name:"Salão de jogos", x:37, y:29, photos:["salao-de-jogos","gourmet-jogos"]},
+      {name:"Academia", x:68, y:25, photos:["academia-1","academia-2","academia-3"]},
+      {name:"Quiosque do rooftop", x:91, y:17, photos:["quiosque-1-1","quiosque-1-2","quiosque-1-3"]}
+    ]}
+  };
+  const HOLD = 5600, FADE = 1200;
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const slides = [...st.querySelectorAll(".pt-slide")];
+  const $ = id => document.getElementById(id);
+  const title = $("ptTitle"), plan = $("ptPlan"), dot = $("ptDot"), mini = $("ptMini"), bar = $("ptBar"), count = $("ptCount"), playBtn = $("ptPlay"), roomsEl = $("ptRooms");
+  let fk = "apto", seq = [], idx = 0, cur = 0, playing = true, visible = false, t0 = 0, elapsed = 0, raf = 0, anim = null, busy = false, dir = 1;
+  const cache = new Map();
+  const load = src => { if (!cache.has(src)) cache.set(src, new Promise(res => { const im = new Image(); im.decoding = "async"; im.onload = () => (im.decode ? im.decode().catch(()=>{}) : Promise.resolve()).then(() => res(im)); im.onerror = () => res(null); im.src = src; })); return cache.get(src); };
+  function build(){
+    const f = FLOORS[fk]; seq = [];
+    f.rooms.forEach((r, ri) => r.photos.forEach((p, pi) => seq.push({r, ri, p, pi})));
+    plan.src = P(f.plan); mini.classList.toggle("lazer", fk === "lazer");
+    roomsEl.innerHTML = f.rooms.map((r, i) => `<button type="button" role="listitem" data-ri="${i}">${r.name}</button>`).join("");
+    roomsEl.querySelectorAll("button").forEach(b => b.onclick = () => { const k = seq.findIndex(s => s.ri === +b.dataset.ri); go(k, true); });
+    document.querySelectorAll(".pt-tabs button").forEach(b => b.setAttribute("aria-selected", b.dataset.k === fk));
+  }
+  // cobre a tela quando o formato da foto é parecido com o do palco; senão mostra inteira sobre um fundo desfocado dela mesma
+  function fit(sl, im){ const sa = st.clientWidth / st.clientHeight, ia = im.naturalWidth / im.naturalHeight, r = ia / sa; sl.classList.toggle("contain", r < .72 || r > 1.45); }
+  function kenBurns(img){
+    if (anim) { anim.cancel(); anim = null; }
+    if (reduce) { img.style.transform = "none"; return; }
+    dir = -dir; const dx = 3.2 * dir, z = 1.12;
+    const from = dir > 0 ? `scale(1) translate3d(${-dx/2}%,0,0)` : `scale(${z}) translate3d(${-dx/2}%,-1%,0)`;
+    const to   = dir > 0 ? `scale(${z}) translate3d(${dx/2}%,-1%,0)` : `scale(1) translate3d(${dx/2}%,0,0)`;
+    anim = img.animate([{transform:from},{transform:to}], {duration: HOLD + FADE*2, easing:"linear", fill:"both"});
+    if (!playing) anim.pause();
+  }
+  function showTitle(s){
+    title.classList.remove("show"); void title.offsetWidth;
+    $("ptKicker").textContent = FLOORS[fk].label + " · " + String(s.ri+1).padStart(2,"0") + "/" + String(FLOORS[fk].rooms.length).padStart(2,"0");
+    $("ptName").textContent = s.r.name;
+    requestAnimationFrame(() => title.classList.add("show"));
+  }
+  async function go(k, user){
+    if (busy) return; busy = true;
+    k = (k + seq.length) % seq.length;
+    const s = seq[k], prev = seq[idx], src = P(s.p);
+    const im = await load(src);
+    const nxt = slides[1 - cur], img = nxt.querySelector(".pt-img"), bg = nxt.querySelector(".pt-bg");
+    img.src = src; bg.src = src; img.alt = s.r.name + " — foto " + (s.pi+1);
+    if (im) fit(nxt, im);
+    kenBurns(img);
+    nxt.classList.add("on"); slides[cur].classList.remove("on"); cur = 1 - cur;
+    const roomChanged = !prev || prev.ri !== s.ri || prev === s || user || k === 0;
+    idx = k; if (roomChanged || !title.classList.contains("show")) showTitle(s);
+    if (s.r.x == null) { dot.classList.add("off"); } else { dot.classList.remove("off"); dot.style.left = s.r.x + "%"; dot.style.top = s.r.y + "%"; }
+    roomsEl.querySelectorAll("button").forEach(b => b.setAttribute("aria-current", +b.dataset.ri === s.ri));
+    const cb = roomsEl.querySelector('[aria-current="true"]'); if (cb && roomsEl.scrollWidth > roomsEl.clientWidth) roomsEl.scrollTo({left: cb.offsetLeft - (roomsEl.clientWidth - cb.offsetWidth)/2, behavior:"smooth"});
+    count.textContent = String(k+1).padStart(2,"0") + " / " + String(seq.length).padStart(2,"0");
+    elapsed = 0; t0 = performance.now();
+    load(P(seq[(k+1) % seq.length].p)); // pré-carrega a próxima
+    setTimeout(() => { busy = false; }, 320);
+  }
+  function tick(now){
+    raf = requestAnimationFrame(tick);
+    if (!playing || !visible || document.hidden) { t0 = now - elapsed; return; }
+    elapsed = now - t0;
+    bar.style.transform = `scaleX(${(idx + Math.min(1, elapsed / HOLD)) / seq.length})`;
+    if (elapsed >= HOLD && !busy) go(idx + 1);
+  }
+  function setPlay(v){ playing = v; playBtn.classList.toggle("paused", !v); playBtn.setAttribute("aria-label", v ? "Pausar passeio" : "Continuar passeio"); if (anim) v && visible ? anim.play() : anim.pause(); }
+  playBtn.onclick = () => setPlay(!playing);
+  $("ptPrev").onclick = () => go(idx - 1, true);
+  $("ptNext").onclick = () => go(idx + 1, true);
+  document.querySelectorAll(".pt-tabs button").forEach(b => b.onclick = () => { if (b.dataset.k === fk) return; fk = b.dataset.k; build(); idx = 0; go(0, true); });
+  // arrastar para o lado troca a foto (celular)
+  let sx = null, sy = 0;
+  st.addEventListener("pointerdown", e => { if (e.target.closest("button")) return; sx = e.clientX; sy = e.clientY; });
+  st.addEventListener("pointerup", e => { if (sx == null) return; const dx = e.clientX - sx, dy = e.clientY - sy; sx = null; if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy)*1.3) go(idx + (dx < 0 ? 1 : -1), true); });
+  st.addEventListener("pointercancel", () => { sx = null; });
+  // começa quando a seção aparece e pausa quando sai
+  new IntersectionObserver(es => es.forEach(e => { visible = e.isIntersecting && e.intersectionRatio > .35; if (anim) visible && playing ? anim.play() : anim.pause(); }), {threshold:[0,.35,.6]}).observe(st);
+  addEventListener("resize", () => { const s = slides[cur], im = s.querySelector(".pt-img"); if (im.naturalWidth) fit(s, im); });
+  build(); go(0, "init"); raf = requestAnimationFrame(tick);
+})();
 /* prédio 3D: inclina seguindo o mouse; no celular, gira devagar com a rolagem */
 (() => {
   const fig = document.getElementById("t3d"); if (!fig) return;

@@ -325,6 +325,8 @@ footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
 .pmodes{position:absolute;top:12px;right:12px;display:flex;gap:2px;padding:3px;border-radius:999px;background:rgba(40,22,26,.82);z-index:2}
 .pmodes button{border:0;background:none;padding:5px 14px;border-radius:999px;font-size:12px;font-weight:700;color:rgba(255,240,232,.75);-webkit-tap-highlight-color:transparent}
 .pmodes button[aria-pressed="true"]{background:#fff;color:#2b1a1d}
+.p3note{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:6;max-width:80%;text-align:center;font:500 13px var(--body);color:#2b1a1d;background:rgba(255,255,255,.92);padding:10px 16px;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.18);opacity:0;pointer-events:none;transition:opacity .35s}
+.p3note.on{opacity:1}
 .rooms{container-type:inline-size}
 .plabel{position:absolute;z-index:1;pointer-events:none;display:grid;gap:.45em;white-space:nowrap;line-height:1}
 .plabel b{font-family:"Unbounded",var(--body);font-weight:300;font-size:var(--fs);letter-spacing:.02em;color:#7E2622}
@@ -2714,7 +2716,7 @@ const TOUR = window.TOUR = (() => {
   }
   function dollLights(v){
     if (v){ r.clippingPlanes = [new THREE.Plane(new THREE.Vector3(0,-1,0), WALL*.55 + .01)]; r.toneMappingExposure = 1.08; key.castShadow = true; key.intensity = .95; key.position.set(-9, 16, 7);
-      const sm = innerWidth < 820 ? 1024 : 2048; key.shadow.mapSize.set(sm, sm); key.shadow.radius = 4; key.shadow.bias = -.0006; key.shadow.normalBias = .02;
+      const sm = (innerWidth < 820 || matchMedia("(pointer:coarse)").matches) ? 1024 : 2048; if (key.shadow.mapSize.x !== sm){ key.shadow.mapSize.set(sm, sm); if (key.shadow.map){ key.shadow.map.dispose(); key.shadow.map = null; } } key.shadow.radius = 4; key.shadow.bias = -.0006; key.shadow.normalBias = .02;
       Object.assign(key.shadow.camera, {left:-13, right:13, top:13, bottom:-13, near:1, far:45}); key.shadow.camera.updateProjectionMatrix(); }
     else { r.clippingPlanes = []; key.castShadow = false; key.intensity = .6; key.position.set(-8,12,6); r.toneMappingExposure = .92; }
   }
@@ -2962,7 +2964,11 @@ const TOUR = window.TOUR = (() => {
     viewBtn.textContent = v ? "Andar por dentro" : "Ver de cima";
   }
   function init(){
-    r = new THREE.WebGLRenderer({antialias:true, alpha:true}); r.setPixelRatio(Math.min(devicePixelRatio, 1.6));
+    const touchDev = matchMedia("(pointer:coarse)").matches;
+    r = new THREE.WebGLRenderer({antialias:!touchDev, alpha:true, powerPreference: touchDev ? "low-power" : "default"}); r.setPixelRatio(Math.min(devicePixelRatio, touchDev ? 1.35 : 1.6));
+    // se o celular derrubar o 3D por falta de memória, o three recupera sozinho; aqui só avisamos e voltamos a desenhar
+    r.domElement.addEventListener("webglcontextlost", e => { e.preventDefault(); window.grGLLost = true; document.dispatchEvent(new CustomEvent("gr-gl-lost")); }, false);
+    r.domElement.addEventListener("webglcontextrestored", () => { window.grGLLost = false; document.dispatchEvent(new CustomEvent("gr-gl-back")); }, false);
     r.outputEncoding = THREE.sRGBEncoding; r.toneMapping = THREE.ACESFilmicToneMapping; r.toneMappingExposure = .92;
     r.shadowMap.enabled = true; r.shadowMap.type = THREE.PCFSoftShadowMap;
     host.appendChild(r.domElement);
@@ -3052,18 +3058,20 @@ const TOUR = window.TOUR = (() => {
     dollLights(true);   // luz de maquete e corte na altura das paredes
     const wg = world.userData.walls, anim = window.gsap && !matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (!on){ on = true; lastT = 0; cancelAnimationFrame(raf); raf = requestAnimationFrame(loop); }
+    window.__silkPause = true;
     if (dtl) dtl.kill();
     if (!anim){ Object.assign(topView,{az:.62, pol:.9, dist:dollFit()}); wg.scale.y = .55; return true; }
     if (swap){ Object.assign(topView,{az:.62, pol:.9, dist:dollFit()}); wg.scale.y = .001; dtl = gsap.to(wg.scale,{y:.55, duration:.9, ease:"power3.out"}); return true; }
     Object.assign(topView,{az:.05, pol:.62, dist:dollFit()*1.9}); wg.scale.y = .001;
-    r.domElement.style.opacity = 0;
+    r.domElement.style.opacity = 0; window.__silkPause = true;
+    setTimeout(() => { if (doll && r.domElement.style.opacity === "0") r.domElement.style.opacity = 1; }, 1500);
     dtl = gsap.timeline().to(r.domElement.style,{opacity:1, duration:.7, ease:"power1.out"},0)
       .to(topView,{az:.62, pol:.9, dist:dollFit(), duration:2.1, ease:"expo.out"},0)
       .to(wg.scale,{y:.55, duration:1.4, ease:"power3.out"},.35);
     return true;
   }
   function dollClose(done){
-    const fin = () => { on = false; cancelAnimationFrame(raf); doll = null; top = false; cam.fov = 70; dollLights(false); scene.background = bgSave; r.domElement.style.opacity = ""; tgt.x = tgt.z = 0; host.appendChild(r.domElement); if (done) done(); };
+    const fin = () => { window.__silkPause = false; on = false; cancelAnimationFrame(raf); doll = null; top = false; cam.fov = 70; dollLights(false); scene.background = bgSave; r.domElement.style.opacity = ""; tgt.x = tgt.z = 0; host.appendChild(r.domElement); if (done) done(); };
     if (!doll){ if (done) done(); return; }
     if (dtl) dtl.kill(); if (!window.gsap){ fin(); return; }
     const wg = world.userData.walls;
@@ -3271,7 +3279,8 @@ function pApply(){
   const k = selTorre + selTipo, p3d = document.getElementById("p3d");
   if (pmode==="3d" && window.THREE && TOUR.has(k)){
     pstage.classList.add("is3d", "doll"); p3d.hidden = false; p3d.style.opacity = 1; dollPlan = k;
-    TOUR.dollOpen(p3d, k, null, rm => IMM.open(k, roomFor(k, rm.n, rm.a)));
+    let okD = false; try { okD = TOUR.dollOpen(p3d, k, null, rm => IMM.open(k, roomFor(k, rm.n, rm.a))); } catch(e){ okD = false; }
+    if (!okD){ dollPlan = null; p3d.hidden = true; pstage.classList.remove("is3d", "doll"); pmode = "2d"; pstage.querySelectorAll(".pmodes button").forEach(b => b.setAttribute("aria-pressed", b.dataset.m==="2d")); p3Note("O 3D não abriu neste aparelho. Toque em 3D para tentar de novo."); }
     return;
   }
   if (dollPlan){ dollPlan = null; TOUR.dollClose(() => { p3d.hidden = true; p3d.style.opacity = ""; pstage.classList.remove("is3d", "doll"); }); if (pmode !== "3d") return; }
@@ -3279,6 +3288,12 @@ function pApply(){
   else P3.show(false, () => pstage.classList.remove("is3d"));
 }
 var dollPlan = null;
+// aviso curto dentro da planta (usado quando o celular derruba o 3D)
+function p3Note(t, ms){ let n = pstage.querySelector(".p3note"); if (!n){ n = document.createElement("div"); n.className = "p3note"; pstage.appendChild(n); } n.textContent = t; n.classList.add("on"); clearTimeout(n._t); n._t = setTimeout(() => n.classList.remove("on"), ms || 4200); }
+let glWait = 0;
+document.addEventListener("gr-gl-lost", () => { if (!dollPlan) return; p3Note("Recarregando o 3D…", 3000); clearTimeout(glWait);
+  glWait = setTimeout(() => { if (window.grGLLost && dollPlan){ pmode = "2d"; pApply(); p3Note("O 3D não abriu neste aparelho. Toque em 3D para tentar de novo."); } }, 3200); });
+document.addEventListener("gr-gl-back", () => { clearTimeout(glWait); if (dollPlan){ const k = dollPlan; dollPlan = null; pApply(); } });
 // cômodo tocado na maquete -> cômodo das fotos
 function roomFor(k, n, a){
   const R = ROOMS[k] || [], idx = name => R.findIndex(r => r[0] === name);
@@ -3881,7 +3896,7 @@ void main(){
   const t0 = performance.now() - 40000; let last = 0;
   const draw = now => {
     if (!still) requestAnimationFrame(draw);
-    if (document.hidden || now - last < (touch ? 40 : 30)) return;
+    if (document.hidden || window.__silkPause || now - last < (touch ? 40 : 30)) return;
     last = now; gl.uniform1f(uT, (now - t0) / 1000); gl.drawArrays(gl.TRIANGLES, 0, 3);
   };
   requestAnimationFrame(draw);
@@ -3889,6 +3904,8 @@ void main(){
 };
 
 const SILK = window.grSilk(document.getElementById("fxBg"));
+// dentro da página da Haacke: avisa a página de fora para pausar a seda dela enquanto a maquete 3D está aberta
+if (parent !== window){ let sent = null; setInterval(() => { const v = !!window.__silkPause; if (v !== sent){ sent = v; try { parent.postMessage({grSilk:!v}, "*"); } catch(e){} } }, 400); }
 (() => { const v = document.getElementById("fxVid"), SRC = "https://stream.mux.com/kimF2ha9zLrX64H00UgLGPflCzNtl1T0215MlAmeOztv8.m3u8";
   if (!v || SILK || matchMedia("(prefers-reduced-motion: reduce)").matches) return; const show = () => (v.muted = true, v.play()).then(() => v.classList.add("on")).catch(() => {});
   const go = () => { if (window.Hls && Hls.isSupported()){ const h = new Hls(); h.loadSource(SRC); h.attachMedia(v); h.on(Hls.Events.MANIFEST_PARSED, show); }
